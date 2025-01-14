@@ -3,3 +3,4 @@ aiogram
 APScheduler
 python-decouple
 python-decouple redis
+asyncpg-lite
