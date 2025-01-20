@@ -1,6 +1,7 @@
-from decouple import config
-from create_bot import db_manager
+import json
 import asyncpg
+
+from decouple import config
 
 
 class Database:
@@ -25,10 +26,9 @@ class Database:
                 print('Data base connected OK!')
             except Exception as e:
                 print(f'Unable to connect to the database: {e}')
-        tele_id = player_data.get('tele_id')
         login = player_data.get('login')
         async with pool.acquire() as conn:
-            await conn.fetch('INSERT INTO players (tele_id, login) VALUES ($1, $2)', tele_id, login)
+            await conn.fetch('INSERT INTO players (login) VALUES ($1)', login)
 
     @classmethod
     async def get_tables(cls):
@@ -45,7 +45,7 @@ class Database:
                 print(tb)
 
     @classmethod
-    async def get_users(cls):
+    async def get_users_bd(cls):
         if cls._pool is None:
             try:
                 pool = await asyncpg.create_pool(dsn=cls._dsn)
@@ -70,16 +70,51 @@ class Database:
         async with pool.acquire() as conn:
             await conn.fetch("CREATE TABLE products (id BIGSERIAL PRIMARY KEY, name TEXT NOT NULL);")
 
+    @classmethod
+    async def insert_new_game(cls, count: int):
+        if cls._pool is None:
+            try:
+                pool = await asyncpg.create_pool(dsn=cls._dsn)
+                print('Data base connected OK!')
+            except Exception as e:
+                print(f'Unable to connect to the database: {e}')
+        async with pool.acquire() as conn:
+            await conn.fetch("INSERT INTO games (count) VALUES ($1)", count)
 
-# async def get_player_data(user_id: int, table_name='players'):
-#     async with pg_manager:
-#         user_info = await pg_manager.select_data(table_name=table_name, where_dict={'tele_id': user_id}, one_dict=True)
-#         if user_info:
-#             return user_info
-#         else:
-#             return None
-#
-#
-# async def insert_player(player_data: dict, table_name='players'):
-#     async with db_manager:
-#         await db_manager.insert_data_with_update(table_name=table_name, records_data=player_data, conflict_column='tele_id', update_on_conflict=False)
+    @classmethod
+    async def get_date(cls):
+        if cls._pool is None:
+            try:
+                pool = await asyncpg.create_pool(dsn=cls._dsn)
+                print('Data base connected OK!')
+            except Exception as e:
+                print(f'Unable to connect to the database: {e}')
+        async with pool.acquire() as conn:
+            date = await conn.fetchrow("SELECT date FROM GAMES ORDER BY id DESC LIMIT 1;")
+            date = date['date'].strftime('%d.%m.%Y')
+            return date
+
+    @classmethod
+    async def get_game_id(cls):
+        if cls._pool is None:
+            try:
+                pool = await asyncpg.create_pool(dsn=cls._dsn)
+                print('Data base connected OK!')
+            except Exception as e:
+                print(f'Unable to connect to the database: {e}')
+        async with pool.acquire() as conn:
+            game_id = await conn.fetchrow("SELECT id FROM GAMES ORDER BY id DESC LIMIT 1;")
+            game_id = game_id['id']
+            return game_id
+
+    @classmethod
+    async def update_game(cls, game: dict, game_id: int):
+        if cls._pool is None:
+            try:
+                pool = await asyncpg.create_pool(dsn=cls._dsn)
+                print('Data base connected OK!')
+            except Exception as e:
+                print(f'Unable to connect to the database: {e}')
+        async with pool.acquire() as conn:
+            game = json.dumps(game, ensure_ascii=False)
+            await conn.fetch("UPDATE games SET game = $1 WHERE id = $2", game, game_id)
