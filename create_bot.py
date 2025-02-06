@@ -1,20 +1,16 @@
 import logging
-import asyncio
+
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.storage.redis import RedisStorage
+
 from decouple import config
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from asyncpg_lite import DatabaseManager
-import asyncpg
 
-
-
-# from db_handler.db_class import PostgresHandler
-
-# pg_db = PostgresHandler(config('PG_LINK'))
+'''Создание бота'''
 scheduler = AsyncIOScheduler(timezone='Europe/Moscow')
 storage = RedisStorage.from_url(config('REDIS_URL'))
 admins = [int(admin_id) for admin_id in config('ADMINS').split(',')]

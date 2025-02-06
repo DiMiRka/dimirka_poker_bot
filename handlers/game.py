@@ -10,7 +10,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from db_hadler.db_class import Database
 from create_bot import bot
 from keyboards.inline_kbs import start_game, make_count, game_keyboards, purchase_players_keyboards, purchase, exit_players_keyboards, exit_player, main_kb
-from utils.my_utils import player_input, get_players, text_game, input_players_start, text_start, input_players, update_users, get_users, update_date, update_game_id, get_game_id
+from utils.game_utils import player_input, get_players, text_game, input_players_start, text_start, input_players, update_users, get_users, update_date, update_game_id, get_game_id
 
 game_router = Router()
 
@@ -57,8 +57,7 @@ async def players(call: CallbackQuery, state: FSMContext):
                 kb_list.append([InlineKeyboardButton(text=player, callback_data=player)])
         keyboards = InlineKeyboardMarkup(
             inline_keyboard=kb_list,
-            resize_keyboard=True,
-            input_field_placeholder='добавляй рыбок:'
+            resize_keyboard=True
         )
         await call.message.answer('Кто играет?', reply_markup=keyboards)
         await state.set_state(Game.players.state)
@@ -104,10 +103,12 @@ async def game(call: CallbackQuery, state: FSMContext):
             photo = FSInputFile('game_image.png')
             await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=game_keyboards(), caption=text,
                                  show_caption_above_media=True)
+            await state.set_state(Game.new_game.state)
             return
 
     if call.data == 'добавить игрока':
         await input_players(call=call)
+        await state.set_state(Game.new_game.state)
         return
 
     if call.data in game_players:
@@ -119,17 +120,20 @@ async def game(call: CallbackQuery, state: FSMContext):
         text = await text_game(data=game_date, count=count)
         await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=game_keyboards(), caption=text,
                              show_caption_above_media=True)
+        await state.set_state(Game.new_game.state)
         return
 
     if call.data == 'докупить':
         players_in_game = get_players()
         await call.message.answer(text='Кто в проёбе?', reply_markup=purchase_players_keyboards(players_in_game))
+        await state.set_state(Game.new_game.state)
         return
 
     if call.data.startswith('закуп'):
         player = call.data[6:]
         await state.update_data(purchase=player)
         await call.message.answer(text='Сколько докупаем?', reply_markup=purchase())
+        await state.set_state(Game.new_game.state)
         return
 
     if call.data.startswith('фишки'):
@@ -142,17 +146,20 @@ async def game(call: CallbackQuery, state: FSMContext):
         text = await text_game(data=game_date, count=count)
         await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=game_keyboards(), caption=text,
                              show_caption_above_media=True)
+        await state.set_state(Game.new_game.state)
         return
 
     if call.data == 'выйти':
         players_in_game = get_players()
         await call.message.answer(text='Кто выходит?', reply_markup=exit_players_keyboards(players_in_game))
+        await state.set_state(Game.new_game.state)
         return
 
     if call.data.startswith('выход'):
-        player = call.data.split()[1]
+        player = call.data[6:]
         await state.update_data(exit=player)
         await call.message.answer(text='Количество фишек на выходе?', reply_markup=None)
+        await state.set_state(Game.new_game.state)
         return
 
     if call.data.isnumeric():
@@ -166,6 +173,7 @@ async def game(call: CallbackQuery, state: FSMContext):
         game_date[player]['Руб.'] = (chips * count) - game_date[player].get('Закуп,руб.')
         photo = FSInputFile('game_image.png')
         text = await text_game(data=game_date, count=count)
+        await state.set_state(Game.new_game.state)
         await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=game_keyboards(), caption=text,
                              show_caption_above_media=True)
 

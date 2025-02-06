@@ -5,6 +5,7 @@ from aiogram.types import Message
 
 
 class IsAdmin(BaseFilter):
+    """Проверка пользователя в административном доступе"""
     def __init__(self, user_ids: int | List[int]) -> None:
         self.user_ids = user_ids
 

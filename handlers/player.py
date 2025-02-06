@@ -1,5 +1,6 @@
 import asyncio
 from aiogram import Router, F
+from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -17,28 +18,34 @@ class Player(StatesGroup):
 
 
 @player_router.callback_query(F.data == 'новый игрок')
-async def start(call: CallbackQuery, state: FSMContext):
+async def new_player(call: CallbackQuery, state: FSMContext):
+    """Добавление в таблицу player базы данных нового игрока
+    Запрос логина"""
     await state.clear()
     async with ChatActionSender.typing(bot=bot, chat_id=call.from_user.id):
-        await asyncio.sleep(2)
+        await asyncio.sleep(1)
+        await call.message.answer('Как тебя величать, дружок?', reply_markup=None)
+    await state.set_state(Player.login.state)
+
+
+@player_router.message(Command('new_player'))
+async def new_player(call: CallbackQuery, state: FSMContext):
+    """Добавление в таблицу player базы данных нового игрока
+    Запрос логина"""
+    await state.clear()
+    async with ChatActionSender.typing(bot=bot, chat_id=call.from_user.id):
+        await asyncio.sleep(1)
         await call.message.answer('Как тебя величать, дружок?', reply_markup=None)
     await state.set_state(Player.login.state)
 
 
 @player_router.message(Player.login)
-async def start(message: Message, state: FSMContext):
+async def new_player_end(message: Message, state: FSMContext):
+    """Добавление в таблицу player базы данных нового игрока
+        Внесение логина в базу данных"""
     await state.clear()
     async with ChatActionSender.typing(bot=bot, chat_id=message.from_user.id):
         await asyncio.sleep(2)
         player_info = {'login': message.text}
         await Database.insert_player(player_data=player_info)
         await message.answer(f'Готовь свои бабки 💲 {message.text}', reply_markup=None)
-
-
-@player_router.callback_query(F.data == 'cтатистика игроков')
-async def tables(call: CallbackQuery, state: FSMContext):
-    await state.clear()
-    async with ChatActionSender.typing(bot=bot, chat_id=call.message.chat.id):
-        await asyncio.sleep(2)
-        await Database.get_users_bd()
-        await call.message.answer('В разработке ⚙', reply_markup=None)
