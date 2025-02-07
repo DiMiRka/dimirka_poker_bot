@@ -18,6 +18,7 @@ game_id = int()  # id текущей игры
 count = int()  # Коэффициент фишки к рублю текущей игры
 game_data = dict()  # Процесс игры
 add_on_player = str()  # Учет игрока для докупа фишек в процессе игры
+out_player = str()  # Учет игрока для выхода из игры
 
 
 def player_input(text):
@@ -91,7 +92,12 @@ async def get_game_id():
 
 async def update_add_on_player(call: CallbackQuery):
     global add_on_player
-    add_on_player = call
+    add_on_player = call.data[6:]
+
+
+async def update_out_layer(call: CallbackQuery):
+    global out_player
+    out_player = call.data[6:]
 
 
 async def input_players_start(call: CallbackQuery):
@@ -100,7 +106,6 @@ async def input_players_start(call: CallbackQuery):
         new_keyboards = input_player_game_kb(game_users=game_users, player_list=player_list, start=start_status)
         await call.message.answer(text='Кто играет?', reply_markup=new_keyboards)
     else:
-        print(call.data[14:])
         player_input(call.data[14:])
         new_keyboards = input_player_game_kb(game_users=game_users, player_list=player_list, start=start_status)
         await call.message.answer(text=f'В игре: {text_players}', reply_markup=new_keyboards)
@@ -127,9 +132,9 @@ async def add_on_players(call: CallbackQuery):
     await call.message.answer(text='Кто в проёбе?', reply_markup=purchase_players_keyboards(player_list))
 
 
-async def add_on(call: CallbackQuery):
+async def add_on_utils(call: CallbackQuery):
     """Докупить игроку фишки в текущей игре"""
-    chips = call.split()[1]
+    chips = call.data.split()[1]
     player = add_on_player
     game_data[player]['Закуп,фш.'] = game_data[player].get('Закуп,фш.') + int(chips)
     game_data[player]['Закуп,руб.'] = game_data[player].get('Закуп,руб.') + int(chips) * count
@@ -137,6 +142,12 @@ async def add_on(call: CallbackQuery):
     text = await text_game()
     await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=game_keyboards(), caption=text,
                          show_caption_above_media=True)
+
+
+async def player_out_game(call: CallbackQuery):
+    """Выбрать игрока для выхода из текущей игры"""
+    await update_out_layer(call)
+    await call.message.answer(text='Количество фишек на выходе?', reply_markup=None)
 
 
 async def text_start():

@@ -14,7 +14,7 @@ from keyboards.inline_kbs import (start_game_kb, make_count, game_keyboards, pur
 from utils.game_utils import (player_input, get_players, text_game, input_players_start,
                               text_start, input_players, update_users, get_users, update_date,
                               update_game_id, get_game_id, update_count, start_game, get_count, game_utils,
-                              input_players_game, add_on_players, update_add_on_player)
+                              input_players_game, add_on_players, update_add_on_player, add_on_utils)
 
 game_router = Router()
 
@@ -39,7 +39,6 @@ async def start(message: Message):
 
 @game_router.callback_query(lambda call: call.data.startswith('фишка') or call.data.startswith('игрок в старт'))
 async def players_in_start(call: CallbackQuery):
-    print(call.data)
     if call.data.startswith('фишка'):
         async with ChatActionSender.typing(bot=bot, chat_id=call.message.chat.id):
             await asyncio.sleep(1)
@@ -96,6 +95,13 @@ async def add_on(call: CallbackQuery):
 
 @game_router.callback_query(lambda call: call.data.startswith('фишки'))
 async def add_on_end(call: CallbackQuery):
+    async with ChatActionSender.typing(bot=bot, chat_id=call.message.chat.id):
+        await asyncio.sleep(1)
+        await add_on_utils(call)
+
+
+@game_router.callback_query(lambda call: call.data == 'выход')
+async def player_out(call: CallbackQuery):
     async with ChatActionSender.typing(bot=bot, chat_id=call.message.chat.id):
         await asyncio.sleep(1)
 
