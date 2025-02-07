@@ -4,7 +4,7 @@ from aiogram.types import BotCommand, BotCommandScopeDefault
 
 from create_bot import bot, dp
 from handlers.start import start_router
-from handlers.game import game_router
+from handlers.game2 import game_router
 from handlers.player import player_router
 from handlers.player_statistics import statistics_router
 from db_hadler.db_class import Database

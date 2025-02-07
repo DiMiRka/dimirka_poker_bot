@@ -22,11 +22,11 @@ def main_kb(user_telegram_id: int):
 def make_count():
     """Клавиатура коэффициента фишки к рублю"""
     kb_list = [
-        [InlineKeyboardButton(text='1 руб.', callback_data='1')],
-        [InlineKeyboardButton(text='2 руб.', callback_data='2')],
-        [InlineKeyboardButton(text='3 руб.', callback_data='3')],
-        [InlineKeyboardButton(text='4 руб.', callback_data='4')],
-        [InlineKeyboardButton(text='5 руб.', callback_data='5')]
+        [InlineKeyboardButton(text='1 руб.', callback_data='фишка 1')],
+        [InlineKeyboardButton(text='2 руб.', callback_data='фишка 2')],
+        [InlineKeyboardButton(text='3 руб.', callback_data='фишка 3')],
+        [InlineKeyboardButton(text='4 руб.', callback_data='фишка 4')],
+        [InlineKeyboardButton(text='5 руб.', callback_data='фишка 5')]
     ]
     keyboards = InlineKeyboardMarkup(
         inline_keyboard=kb_list,
@@ -36,7 +36,7 @@ def make_count():
     return keyboards
 
 
-def start_game():
+def start_game_kb():
     """Кнопка запуска игры"""
     kb_list = [
         [InlineKeyboardButton(text='Старт ✔️', callback_data='битва')]
@@ -65,14 +65,18 @@ def game_keyboards():
     return keyboards
 
 
-def input_player_game(game_users: list, player_list: list, start: bool):
+def input_player_game_kb(game_users: list, player_list: list, start: bool):
     """Клавиатура добавления игроков в игру"""
     kb_list = []
-    for player in game_users:
-        if player not in player_list:
-            kb_list.append([InlineKeyboardButton(text=str(player), callback_data=str(player))])
-    if start:
+    if not start:
+        for player in game_users:
+            if player not in player_list:
+                kb_list.append([InlineKeyboardButton(text=str(player), callback_data=f'игрок в старт {str(player)}')])
         kb_list.append([InlineKeyboardButton(text='Готово 👌🏼', callback_data='стартуем')])
+    else:
+        for player in game_users:
+            if player not in player_list:
+                kb_list.append([InlineKeyboardButton(text=str(player), callback_data=f'игрок в игру {str(player)}')])
     keyboards = InlineKeyboardMarkup(
         inline_keyboard=kb_list,
         resize_keyboard=True

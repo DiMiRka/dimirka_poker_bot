@@ -73,7 +73,6 @@ async def game_start(call: CallbackQuery, state: FSMContext):
             await asyncio.sleep(2)
             await state.update_data(players_in_game=get_players())
             data = await state.get_data()
-            print(data)
             count = data.get('count')
             game_date = dict()
             for player in data.get('players_in_game'):
@@ -215,11 +214,10 @@ async def end_game(message: Message, state: FSMContext):
             await message.answer(text=f'{next_player} на кармане:')
             return
         else:
-            photo = FSInputFile('game_image.png')
             await Database.update_game(game=game_end, game_id=game_id)
             text = await text_game(data=game_end, count=count)
             text += '\nИТОГИ 💰'
-
+            photo = FSInputFile('game_image.png')
             await bot.send_photo(chat_id=message.chat.id, photo=photo, reply_markup=None, caption=text,
                                  show_caption_above_media=True)
             await message.answer(text='До следующего раза, брат 🤙', reply_markup=main_kb(message.from_user.id))
