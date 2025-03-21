@@ -2,8 +2,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from aiogram.types import CallbackQuery, FSInputFile, Message
+from aiogram.fsm.context import FSMContext
 
-from keyboards.inline_kbs import input_player_game_kb, start_game_kb, game_keyboards, purchase_players_keyboards, exit_players_keyboards, main_kb
+from keyboards.inline_kbs import (input_player_game_kb, start_game_kb, game_keyboards, purchase_players_keyboards,
+                                  exit_players_keyboards, main_kb, game_admin_keyboards, change_purchase_players_keyboards,
+                                  back_players_keyboards, extra_players_keyboards)
 from db_hadler.db_class import Database
 from create_bot import bot
 
@@ -12,12 +15,13 @@ game_users = list()  # Список всех игроков в базе данн
 
 start_status = False  # Статус запущенной игры
 player_list = list()  # Список игроков текущей игры
+player_out_list = list()  # Список игроков, закончивших текущую игру
 text_players = str()  # Оформление текста со списком игроков, участвующих в игре
 date = str()  # Дата текущей игры
 game_id = int()  # id текущей игры
 count = int()  # Коэффициент фишки к рублю текущей игры
 game_data = dict()  # Процесс игры
-add_on_player = str()  # Учет игрока для докупа фишек в процессе игры
+add_bank_player = str()  # Учет игрока для докупа/изменения фишек в процессе игры
 out_player = str()  # Учет игрока для выхода из игры
 
 
@@ -91,8 +95,13 @@ async def get_game_id():
 
 
 async def update_add_on_player(call: CallbackQuery):
-    global add_on_player
-    add_on_player = call.data[6:]
+    global add_bank_player
+    add_bank_player = call.data[6:]
+
+
+async def update_change_on_player(call: CallbackQuery):
+    global add_bank_player
+    add_bank_player = call.data[9:]
 
 
 async def update_out_layer(call: CallbackQuery):
@@ -123,7 +132,7 @@ async def input_players_game(call: CallbackQuery):
     game_data[call.data[13:]] = {'Закуп,фш.': 1000, 'Закуп,руб.': 1000 * count, 'Статус': 'В игре', 'Фишки': 0, 'Руб.': 0}
     photo = FSInputFile('game_image.png')
     text = await text_game()
-    await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=game_keyboards(), caption=text,
+    await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=game_keyboards(call.from_user.id), caption=text,
                          show_caption_above_media=True)
 
 
@@ -135,12 +144,12 @@ async def add_on_players(call: CallbackQuery):
 async def add_on_utils(call: CallbackQuery):
     """Докупить игроку фишки в текущей игре"""
     chips = call.data.split()[1]
-    player = add_on_player
+    player = add_bank_player
     game_data[player]['Закуп,фш.'] = game_data[player].get('Закуп,фш.') + int(chips)
     game_data[player]['Закуп,руб.'] = game_data[player].get('Закуп,руб.') + int(chips) * count
     photo = FSInputFile('game_image.png')
     text = await text_game()
-    await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=game_keyboards(), caption=text,
+    await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=game_keyboards(call.from_user.id), caption=text,
                          show_caption_above_media=True)
 
 
@@ -152,31 +161,35 @@ async def start_out_player(call: CallbackQuery):
 async def player_out_game(call: CallbackQuery):
     """Определить количество фишек игрока на выходе из игры"""
     await update_out_layer(call)
+    player_out_list.append(out_player)
     player_list.remove(out_player)
     await call.message.answer(text='Количество фишек на кармане?', reply_markup=None)
 
 
-async def result_chips(message: Message):
+async def result_chips(message: Message, state: FSMContext):
     """Подсчитать результаты вышедшего игрока и обновить статус на Вышел"""
     global start_status, out_player
-    if start_status:
+    if start_status:  # В случае выхода игрока в процессе игры
+        await state.clear()
         chips = int(message.text)
         game_data[out_player]['Статус'] = 'Вышел'
         game_data[out_player]['Фишки'] = chips
         game_data[out_player]['Руб.'] = (chips * count) - game_data[out_player].get('Закуп,руб.')
         photo = FSInputFile('game_image.png')
         text = await text_game()
-        await bot.send_photo(chat_id=message.chat.id, photo=photo, reply_markup=game_keyboards(), caption=text,
+        await bot.send_photo(chat_id=message.chat.id, photo=photo, reply_markup=game_keyboards(message.from_user.id), caption=text,
                              show_caption_above_media=True)
-    else:
+    else:  # В случае окончания игры
         chips = int(message.text)
         game_data[out_player]['Статус'] = 'Вышел'
         game_data[out_player]['Фишки'] = chips
         game_data[out_player]['Руб.'] = (chips * count) - game_data[out_player].get('Закуп,руб.')
-        if player_list:
+        if player_list:  # Зацикливаем процесс подсчета результатов в конце игры до выхода всех игроков
             out_player = player_list.pop(0)
             await message.answer(text=f'{out_player} на кармане:')
-        else:
+        else:  # Выводим итоги оконченной игры
+            await Database.update_game(game=game_data, game_id=game_id)
+            await state.clear()
             text = await text_game()
             text += '\nИТОГИ 💰'
             photo = FSInputFile('game_image.png')
@@ -195,6 +208,7 @@ async def text_start():
 
 
 async def start_game(call: CallbackQuery):
+    """Процесс запуска игры"""
     for player in player_list:
         game_data[player] = {'Закуп,фш.': 1000, 'Закуп,руб.': 1000 * count, 'Статус': 'В игре',
                              'Фишки': 0, 'Руб.': 0}
@@ -238,21 +252,74 @@ async def game_utils(call: CallbackQuery):
         text = await text_game()
         photo = FSInputFile('game_image.png')
         start_status = True
-        await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=game_keyboards(), caption=text,
+        await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=game_keyboards(call.from_user.id), caption=text,
                              show_caption_above_media=True)
     else:
         pass
 
 
 async def game_end_start(call: CallbackQuery):
+    """Процесс запуска завершения игры"""
     global start_status, out_player
     if start_status:
-        # players_in_game = list()
-        # players_in_game = [player for player in game_data.keys() if game_data[player]['Статус'] == 'В игре']
-        # for pl in game_data.keys():
-        #     if game_data[pl]['Статус'] == 'В игре':
-        #         players_in_game.append(pl)
         out_player = player_list.pop(0)
         start_status = False
         await call.message.answer(f'Подведем итоги 😉\nУ {out_player} на кармане:', reply_markup=None)
 
+
+async def admin_board_game(call: CallbackQuery):
+    """Админ панель в процессе игры"""
+    await call.message.answer('Что делаем?', reply_markup=game_admin_keyboards())
+
+
+async def change_purchase_players(call: CallbackQuery):
+    """Выбрать игрока для смены закупа в процессе игры"""
+    await call.message.answer(text='Кто?', reply_markup=change_purchase_players_keyboards(player_list))
+
+
+async def change_purchase_utils(message: Message):
+    """Поменять игроку докуп в текущей игре"""
+    chips = message.text
+    player = add_bank_player
+    game_data[player]['Закуп,фш.'] = int(chips)
+    game_data[player]['Закуп,руб.'] = int(chips) * count
+    photo = FSInputFile('game_image.png')
+    text = await text_game()
+    await bot.send_photo(chat_id=message.chat.id, photo=photo, reply_markup=game_keyboards(message.from_user.id), caption=text,
+                         show_caption_above_media=True)
+
+
+async def game_back_player(call: CallbackQuery):
+    """Выбрать игрока которого вернем в игру"""
+    await call.message.answer(text='Кто?', reply_markup=back_players_keyboards(player_out_list))
+
+
+async def game_back_player_end(call: CallbackQuery):
+    """Вернуть игрока в текущую игру"""
+    player = call.data.split()[1]
+    player_out_list.remove(player)
+    game_data[player]['Статус'] = 'В игре'
+    game_data[player]['Фишки'] = 0
+    game_data[player]['Руб.'] = 0
+    photo = FSInputFile('game_image.png')
+    text = await text_game()
+    await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=game_keyboards(call.from_user.id),
+                         caption=text,
+                         show_caption_above_media=True)
+
+
+async def out_extra_player(call: CallbackQuery):
+    """Выбрать игрока для выхода из текущей игры"""
+    await call.message.answer(text='Кто?', reply_markup=extra_players_keyboards(player_list))
+
+
+async def delete_extra_player(call: CallbackQuery):
+    """Удалить игрока из текущей игры"""
+    player = call.data.split()[1]
+    player_list.remove(player)
+    del game_data[player]
+    photo = FSInputFile('game_image.png')
+    text = await text_game()
+    await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=game_keyboards(call.from_user.id),
+                         caption=text,
+                         show_caption_above_media=True)

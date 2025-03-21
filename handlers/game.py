@@ -1,132 +1,166 @@
-import asyncio
 from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
-from aiogram.handlers import CallbackQueryHandler
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.utils.chat_action import ChatActionSender
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.fsm.context import FSMContext
+
 import logging
 
-from db_hadler.db_class import Database
-from create_bot import bot
-from keyboards.inline_kbs import (start_game_kb, make_count, game_keyboards, purchase_players_keyboards,
-                                  purchase, exit_players_keyboards, exit_player, main_kb)
-from utils.game_utils import (player_input, get_players, text_game, input_players_start,
-                              text_start, input_players, update_users, get_users, update_date,
-                              update_game_id, get_game_id, update_count, start_game, get_count, game_utils,
-                              input_players_game, add_on_players, update_add_on_player, add_on_utils, player_out_game, start_out_player,
-                              result_chips, game_end_start)
+
+from keyboards.inline_kbs import (make_count, purchase)
+from utils.game_utils import (player_input, input_players_start, input_players, update_users, update_count,
+                              start_game, game_utils, input_players_game, add_on_players, update_add_on_player,
+                              add_on_utils, player_out_game, start_out_player, result_chips, game_end_start,
+                              admin_board_game, update_change_on_player, change_purchase_players, change_purchase_utils,
+                              game_back_player, game_back_player_end, out_extra_player, delete_extra_player)
 
 game_router = Router()
+
+
+class ChangePurchase(StatesGroup):
+    change = State()
+
+
+class ResultGame(StatesGroup):
+    result_bank = State()
 
 
 @game_router.callback_query(F.data == 'начать игру')
 async def start(call: CallbackQuery):
     player_input('новая игра')
-    async with ChatActionSender.typing(bot=bot, chat_id=call.from_user.id):
-        await asyncio.sleep(2)
-        await update_users()
-        await call.message.answer('1 фишка равняется:', reply_markup=make_count())
+    await update_users()
+    await call.message.answer('1 фишка равняется:', reply_markup=make_count())
 
 
 @game_router.message(Command('start_game'))
 async def start(message: Message):
-        player_input('новая игра')
-    # async with ChatActionSender.typing(bot=bot, chat_id=message.chat.id):
-    #     await asyncio.sleep(2)
-        await update_users()
-        await message.answer('1 фишка равняется:', reply_markup=make_count())
+    player_input('новая игра')
+    await update_users()
+    await message.answer('1 фишка равняется:', reply_markup=make_count())
 
 
 @game_router.callback_query(lambda call: call.data.startswith('фишка') or call.data.startswith('игрок в старт'))
 async def players_in_start(call: CallbackQuery):
     if call.data.startswith('фишка'):
-        # async with ChatActionSender.typing(bot=bot, chat_id=call.message.chat.id):
-        #     await asyncio.sleep(1)
-            await update_count(int(call.data[-1]))
-            await input_players_start(call)
-            logging.info(f'{call.data}')
+        await update_count(int(call.data[-1]))
+        await input_players_start(call)
+        logging.info(f'{call.data}')
     else:
-        # async with ChatActionSender.typing(bot=bot, chat_id=call.message.chat.id):
-        #     await asyncio.sleep(1)
-            await input_players_start(call)
-            logging.info(f'{call.data}')
+        await input_players_start(call)
+        logging.info(f'{call.data}')
 
 
 @game_router.callback_query(lambda call: call.data == 'стартуем')
 async def game_start(call: CallbackQuery):
-    # async with ChatActionSender.typing(bot=bot, chat_id=call.message.chat.id):
-    #     await asyncio.sleep(2)
-        await start_game(call)
+    await start_game(call)
+    logging.info(f'{call.data}')
 
 
 @game_router.callback_query(lambda call: call.data == 'битва')
 async def game(call: CallbackQuery):
-    # async with ChatActionSender.typing(bot=bot, chat_id=call.message.chat.id):
-    #     await asyncio.sleep(2)
-        await game_utils(call)
+    await game_utils(call)
+    logging.info(f'{call.data}')
 
 
 @game_router.callback_query(lambda call: call.data == 'добавить игрока')
 async def players_in_game(call: CallbackQuery):
-    # async with ChatActionSender.typing(bot=bot, chat_id=call.message.chat.id):
-    #     await asyncio.sleep(1)
-        await input_players(call=call)
+    await input_players(call=call)
+    logging.info(f'{call.data}')
 
 
 @game_router.callback_query(lambda call: call.data.startswith('игрок в игру'))
 async def add_player_in_game(call: CallbackQuery):
-    # async with ChatActionSender.typing(bot=bot, chat_id=call.message.chat.id):
-    #     await asyncio.sleep(1)
-        await input_players_game(call)
+    await input_players_game(call)
+    logging.info(f'{call.data}')
 
 
 @game_router.callback_query(lambda call: call.data == 'докупить')
 async def add_on_player(call: CallbackQuery):
-    # async with ChatActionSender.typing(bot=bot, chat_id=call.message.chat.id):
-    #     await asyncio.sleep(1)
-        await add_on_players(call)
+    await add_on_players(call)
+    logging.info(f'{call.data}')
 
 
 @game_router.callback_query(lambda call: call.data.startswith('закуп'))
 async def add_on(call: CallbackQuery):
-    # async with ChatActionSender.typing(bot=bot, chat_id=call.message.chat.id):
-    #     await asyncio.sleep(1)
-        await update_add_on_player(call)
-        await call.message.answer(text='Сколько докупаем?', reply_markup=purchase())
+    await update_add_on_player(call)
+    await call.message.answer(text='Сколько докупаем?', reply_markup=purchase())
+    logging.info(f'{call.data}')
 
 
 @game_router.callback_query(lambda call: call.data.startswith('фишки'))
 async def add_on_end(call: CallbackQuery):
-    # async with ChatActionSender.typing(bot=bot, chat_id=call.message.chat.id):
-    #     await asyncio.sleep(1)
-        await add_on_utils(call)
+    await add_on_utils(call)
+    logging.info(f'{call.data}')
 
 
 @game_router.callback_query(lambda call: call.data == 'выйти')
 async def start_out(call: CallbackQuery):
-    # async with ChatActionSender.typing(bot=bot, chat_id=call.message.chat.id):
-    #     await asyncio.sleep(1)
-        await start_out_player(call)
+    await start_out_player(call)
+    logging.info(f'{call.data}')
 
 
 @game_router.callback_query(lambda call: call.data.startswith('выход'))
-async def player_out(call: CallbackQuery):
-    async with ChatActionSender.typing(bot=bot, chat_id=call.message.chat.id):
-        await asyncio.sleep(1)
-        await player_out_game(call)
+async def player_out(call: CallbackQuery, state: FSMContext):
+    await player_out_game(call)
+    await state.set_state(ResultGame.result_bank)
+    logging.info(f'{call.data}')
 
 
-@game_router.message(F.text.isnumeric())
-async def total_chips(message: Message):
-    async with ChatActionSender.typing(bot=bot, chat_id=message.chat.id):
-        await asyncio.sleep(1)
-        await result_chips(message)
+@game_router.message(ResultGame.result_bank)
+async def total_chips(message: Message, state: FSMContext):
+    await result_chips(message, state=state)
 
 
 @game_router.callback_query(lambda call: call.data == 'закончить')
-async def end_game(call: CallbackQuery):
-    async with ChatActionSender.typing(bot=bot, chat_id=call.message.chat.id):
-        await asyncio.sleep(1)
-        await game_end_start(call)
+async def end_game(call: CallbackQuery, state: FSMContext):
+    await game_end_start(call)
+    await state.set_state(ResultGame.result_bank)
+    logging.info(f'{call.data}')
+
+
+@game_router.callback_query(lambda call: call.data == 'админ панель игры')
+async def admin_bord(call: CallbackQuery):
+    await admin_board_game(call)
+
+
+@game_router.callback_query(lambda call: call.data == 'поменять закуп')
+async def admin_change_purchase(call: CallbackQuery):
+    await change_purchase_players(call)
+
+
+@game_router.callback_query(lambda call: call.data.startswith('поменять'))
+async def add_on(call: CallbackQuery, state: FSMContext):
+    await update_change_on_player(call)
+    await state.clear()
+    await call.message.answer(text='Итоговый закуп:', reply_markup=None)
+    await state.set_state(ChangePurchase.change.state)
+
+
+@game_router.message(ChangePurchase.change)
+async def change_purchase(message: Message, state: FSMContext):
+    await change_purchase_utils(message)
+    await state.clear()
+
+
+@game_router.callback_query(lambda call: call.data == 'возврат игрока')
+async def player_back(call: CallbackQuery):
+    await game_back_player(call)
+    logging.info(f'{call.data}')
+
+
+@game_router.callback_query(lambda call: call.data.startswith('вернуть'))
+async def player_back_end(call: CallbackQuery):
+    await game_back_player_end(call)
+    logging.info(f'{call.data}')
+
+
+@game_router.callback_query(lambda call: call.data == 'убрать лишнего')
+async def extra_player(call: CallbackQuery):
+    await out_extra_player(call)
+    logging.info(f'{call.data}')
+
+
+@game_router.callback_query(lambda call: call.data.startswith('удалить'))
+async def delete_player_game(call: CallbackQuery):
+    await delete_extra_player(call)
+    logging.info(f'{call.data}')
