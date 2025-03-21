@@ -29,13 +29,13 @@ async def new_player(call: CallbackQuery, state: FSMContext):
 
 
 @player_router.message(Command('new_player'))
-async def new_player(call: CallbackQuery, state: FSMContext):
+async def new_player(message: Message, state: FSMContext):
     """Добавление в таблицу player базы данных нового игрока
     Запрос логина"""
     await state.clear()
-    async with ChatActionSender.typing(bot=bot, chat_id=call.from_user.id):
+    async with ChatActionSender.typing(bot=bot, chat_id=message.from_user.id):
         await asyncio.sleep(1)
-        await call.message.answer('Как тебя величать, дружок?', reply_markup=None)
+        await message.answer('Как тебя величать, дружок?', reply_markup=None)
     await state.set_state(Player.login.state)
 
 

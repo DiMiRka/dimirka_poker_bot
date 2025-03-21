@@ -19,6 +19,18 @@ def main_kb(user_telegram_id: int):
     return keyboard
 
 
+def admin_main_kb():
+    kb_list = [
+        [InlineKeyboardButton(text="📚 Меняем базу данных", callback_data='изменить базу данных')],
+        [InlineKeyboardButton(text="📋 Статистика игроков", callback_data='cтатистика игроков')]
+    ]
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=kb_list,
+        resize_keyboard=True,
+        one_time_keyboard=True)
+    return keyboard
+
+
 def make_count():
     """Клавиатура коэффициента фишки к рублю"""
     kb_list = [
