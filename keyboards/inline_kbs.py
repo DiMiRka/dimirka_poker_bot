@@ -22,7 +22,8 @@ def main_kb(user_telegram_id: int):
 def admin_main_kb():
     kb_list = [
         [InlineKeyboardButton(text="📚 Меняем базу данных", callback_data='изменить базу данных')],
-        [InlineKeyboardButton(text="📋 Статистика игроков", callback_data='cтатистика игроков')]
+        [InlineKeyboardButton(text="📋 Статистика игроков", callback_data='cтатистика игроков')],
+        [InlineKeyboardButton(text="📋 Общая статистика игроков", callback_data='общая cтатистика игроков')]
     ]
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=kb_list,

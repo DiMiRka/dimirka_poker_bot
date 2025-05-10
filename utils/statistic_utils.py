@@ -5,14 +5,15 @@ import json
 from db_hadler.db_class import Database
 
 
-async def update_player_statistics():
+async def update_player_statistics(choice):
     """Обновляем статистику игроков из всех игр базы данных.
     Оформляем таблицу статистику игроков для вывода"""
-    games = await Database.get_games()
-    print(games)
+    if choice == "общая cтатистика игроков":
+        games = await Database.get_all_games()
+    else:
+        games = await Database.get_games()
     statistic_not_sorted = dict()
     for game in games:
-        print(game)
         game = json.loads(game)
         for player, result in game.items():
             if result.get('Руб.') > 0:

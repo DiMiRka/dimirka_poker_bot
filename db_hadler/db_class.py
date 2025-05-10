@@ -119,6 +119,24 @@ class Database:
             return games_list
 
     @classmethod
+    async def get_all_games(cls):
+        """Получить список всех json результатов игр (таблица games) по всем базам данных"""
+        if cls._pool is None:
+            try:
+                cls._pool = await asyncpg.create_pool(dsn=cls._dsn)
+                print('Data base connected OK!')
+            except Exception as e:
+                print(f'Unable to connect to the database: {e}')
+        async with cls._pool.acquire() as conn:
+            games = await conn.fetch(f"SELECT game FROM games_1 ;")
+            games_2 = await conn.fetch(f"SELECT game FROM games_2 ;")
+            games_list = [game[0] for game in games if game[0]]
+            for game in games_2:
+                if game[0]:
+                    games_list.append(game[0])
+            return games_list
+
+    @classmethod
     async def update_player_statistics(cls, data: dict):
         """Обновить строки игроков согласно результатов всех игр (таблица players)"""
         if cls._pool is None:
