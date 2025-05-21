@@ -19,14 +19,27 @@ def main_kb(user_telegram_id: int):
     return keyboard
 
 
+def admin_main_kb():
+    kb_list = [
+        [InlineKeyboardButton(text="📚 Меняем базу данных", callback_data='изменить базу данных')],
+        [InlineKeyboardButton(text="📋 Статистика игроков", callback_data='cтатистика игроков')],
+        [InlineKeyboardButton(text="📋 Общая статистика игроков", callback_data='общая cтатистика игроков')]
+    ]
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=kb_list,
+        resize_keyboard=True,
+        one_time_keyboard=True)
+    return keyboard
+
+
 def make_count():
     """Клавиатура коэффициента фишки к рублю"""
     kb_list = [
-        [InlineKeyboardButton(text='1 руб.', callback_data='1')],
-        [InlineKeyboardButton(text='2 руб.', callback_data='2')],
-        [InlineKeyboardButton(text='3 руб.', callback_data='3')],
-        [InlineKeyboardButton(text='4 руб.', callback_data='4')],
-        [InlineKeyboardButton(text='5 руб.', callback_data='5')]
+        [InlineKeyboardButton(text='1 руб.', callback_data='фишка 1')],
+        [InlineKeyboardButton(text='2 руб.', callback_data='фишка 2')],
+        [InlineKeyboardButton(text='3 руб.', callback_data='фишка 3')],
+        [InlineKeyboardButton(text='4 руб.', callback_data='фишка 4')],
+        [InlineKeyboardButton(text='5 руб.', callback_data='фишка 5')]
     ]
     keyboards = InlineKeyboardMarkup(
         inline_keyboard=kb_list,
@@ -36,7 +49,7 @@ def make_count():
     return keyboards
 
 
-def start_game():
+def start_game_kb():
     """Кнопка запуска игры"""
     kb_list = [
         [InlineKeyboardButton(text='Старт ✔️', callback_data='битва')]
@@ -49,13 +62,30 @@ def start_game():
     return keyboards
 
 
-def game_keyboards():
+def game_keyboards(user_telegram_id: int):
     """Клавиатура процесса игры"""
     kb_list = [
         [InlineKeyboardButton(text='Добавить игрока 🎣', callback_data='добавить игрока')],
         [InlineKeyboardButton(text='Докуп 💲', callback_data='докупить')],
         [InlineKeyboardButton(text='Вышел 🚪', callback_data='выйти')],
         [InlineKeyboardButton(text='Закончить игру 🔚', callback_data='закончить')]
+    ]
+    if user_telegram_id in admins:
+        kb_list.append([InlineKeyboardButton(text="️Админ панель ⚙", callback_data='админ панель игры')])
+
+    keyboards = InlineKeyboardMarkup(
+        inline_keyboard=kb_list,
+        resize_keyboard=True,
+        one_time_keyboard=True,
+    )
+    return keyboards
+
+
+def game_admin_keyboards():
+    kb_list = [
+        [InlineKeyboardButton(text='Поменять закуп игрока 💲', callback_data='поменять закуп')],
+        [InlineKeyboardButton(text='Вернуть игрока в игру 🎣', callback_data='возврат игрока')],
+        [InlineKeyboardButton(text='Убрать лишнего игрока 🔙', callback_data='убрать лишнего')],
     ]
     keyboards = InlineKeyboardMarkup(
         inline_keyboard=kb_list,
@@ -65,14 +95,18 @@ def game_keyboards():
     return keyboards
 
 
-def input_player_game(game_users: list, player_list: list, start: bool):
+def input_player_game_kb(game_users: list, player_list: list, start: bool):
     """Клавиатура добавления игроков в игру"""
     kb_list = []
-    for player in game_users:
-        if player not in player_list:
-            kb_list.append([InlineKeyboardButton(text=str(player), callback_data=str(player))])
-    if start:
+    if not start:
+        for player in game_users:
+            if player not in player_list:
+                kb_list.append([InlineKeyboardButton(text=str(player), callback_data=f'игрок в старт {str(player)}')])
         kb_list.append([InlineKeyboardButton(text='Готово 👌🏼', callback_data='стартуем')])
+    else:
+        for player in game_users:
+            if player not in player_list:
+                kb_list.append([InlineKeyboardButton(text=str(player), callback_data=f'игрок в игру {str(player)}')])
     keyboards = InlineKeyboardMarkup(
         inline_keyboard=kb_list,
         resize_keyboard=True
@@ -121,11 +155,52 @@ def exit_players_keyboards(players: list):
     return keyboards
 
 
+def back_players_keyboards(players: list):
+    """Клавиатура выбора игрока вышедшего из текущей игры для возврата в игру"""
+    kb_list = []
+    print(players)
+    for player in players:
+        print(player)
+        kb_list.append([InlineKeyboardButton(text=player, callback_data=f'вернуть {player}')])
+    keyboards = InlineKeyboardMarkup(
+        inline_keyboard=kb_list,
+        resize_keyboard=True,
+        one_time_keyboard=True,
+    )
+    return keyboards
+
+
+def extra_players_keyboards(players: list):
+    """Клавиатура выбора игрока из текущей игры для удаления из игры"""
+    kb_list = []
+    for player in players:
+        kb_list.append([InlineKeyboardButton(text=player, callback_data=f'удалить {player}')])
+    keyboards = InlineKeyboardMarkup(
+        inline_keyboard=kb_list,
+        resize_keyboard=True,
+        one_time_keyboard=True,
+    )
+    return keyboards
+
+
 def exit_player(chips):
     """Кнопка подтверждения выхода игрока из текущей игры"""
     kb_list = [
         [InlineKeyboardButton(text='Подтвердить', callback_data=chips)]
     ]
+    keyboards = InlineKeyboardMarkup(
+        inline_keyboard=kb_list,
+        resize_keyboard=True,
+        one_time_keyboard=True,
+    )
+    return keyboards
+
+
+def change_purchase_players_keyboards(players: list):
+    """Клавиатура выбора игрока из текущей игры для закупа фишек"""
+    kb_list = []
+    for player in players:
+        kb_list.append([InlineKeyboardButton(text=player, callback_data=f'поменять {player}')])
     keyboards = InlineKeyboardMarkup(
         inline_keyboard=kb_list,
         resize_keyboard=True,
