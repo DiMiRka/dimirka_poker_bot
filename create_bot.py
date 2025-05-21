@@ -22,8 +22,8 @@ class MessageLogMiddleware(BaseMiddleware):
         event: Message,
         data: Dict[str, Any]
     ) -> Any:
-        logging.info(event.text) # Выводим текст сообщения
-        return await handler(event, data) # Возвращаем обновление хендлерам
+        logging.info(event.text)  # Выводим текст сообщения
+        return await handler(event, data)  # Возвращаем обновление хендлерам
 
 
 '''Создание бота'''

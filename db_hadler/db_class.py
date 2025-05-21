@@ -1,7 +1,6 @@
 import json
 import asyncpg
 
-
 from decouple import config
 
 data_number = 1

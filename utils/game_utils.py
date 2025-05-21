@@ -63,7 +63,7 @@ async def get_count():
 
 
 def get_players():
-    """Получить список игроков ткущей игры"""
+    """Получить список игроков текущей игры"""
     return player_list
 
 
