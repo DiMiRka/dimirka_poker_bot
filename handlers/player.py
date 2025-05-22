@@ -7,9 +7,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.utils.chat_action import ChatActionSender
 
 from create_bot import bot
-from db_hadler.db_class import Database
-from db_hadler.database import db
-from repositories import PlayerRepository
+from servise import create_player_db
 
 player_router = Router()
 
@@ -48,16 +46,5 @@ async def new_player_end(message: Message, state: FSMContext):
     await state.clear()
     async with ChatActionSender.typing(bot=bot, chat_id=message.from_user.id):
         await asyncio.sleep(2)
-
-
-
-        async with db.session() as session:
-            repo = PlayerRepository(session)
-            player = await repo.get_by_login(message.text)
-
-            if player:
-                await message.answer("Вы уже зарегистрированы!")
-                return
-
-            player = await repo.create(message.text)
-            await message.answer(f'Готовь свои бабки 💲 {player.login}', reply_markup=None)
+        result = await create_player_db(message.text)
+        await message.answer(result, reply_markup=None)

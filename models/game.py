@@ -19,7 +19,7 @@ class Game(Base):
     id: Mapped[int] = mapped_column(autoincrement=True, primary_key=True, index=True)
     date: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, default=datetime.utcnow)
     count: Mapped[int]
-    game: Mapped[JSON] = mapped_column(JSON)
+    game: Mapped[JSON] = mapped_column(JSON, default={})
 
     players: Mapped[List["Player"]] = relationship(
         "Player",

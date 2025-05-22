@@ -9,6 +9,7 @@ from keyboards.inline_kbs import (input_player_game_kb, start_game_kb, game_keyb
                                   back_players_keyboards, extra_players_keyboards)
 from db_hadler.db_class import Database
 from create_bot import bot
+from servise import create_game_db, get_players_db
 
 pd.set_option('display.max_columns', None)  # Настройка таблицы pandas
 game_users = list()  # Список всех игроков в базе данных
@@ -43,7 +44,9 @@ def player_input(text):
 async def update_users():
     """Обновляем список игроков с базы данных"""
     global game_users
-    game_users = await Database.get_users_bd()
+    users = await get_players_db()
+    game_users = [user.login for user in users]
+    # game_users = await Database.get_users_bd()
 
 
 async def get_users():
@@ -62,7 +65,7 @@ async def get_count():
     return count
 
 
-def get_players():
+async def get_players():
     """Получить список игроков текущей игры"""
     return player_list
 
@@ -244,11 +247,12 @@ async def text_game():
 
 async def game_utils(call: CallbackQuery):
     """Оформление сообщения процесса игры"""
-    global start_status
+    global start_status, date, game_id
     if not start_status:
-        await Database.insert_new_game(count=count)
-        await update_date()
-        await update_game_id()
+        date, game_id = await create_game_db(count=count)
+        # await Database.insert_new_game(count=count)
+        # await update_date()
+        # await update_game_id()
         text = await text_game()
         photo = FSInputFile('game_image.png')
         start_status = True

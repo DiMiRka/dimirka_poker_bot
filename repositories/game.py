@@ -10,8 +10,8 @@ class GameRepository(BaseRepository):
         )
         return result.scalar_one_or_none()
 
-    async def create(self, login: str) -> Game:
-        player = Game(login=login)
-        self.session.add(player)
+    async def create(self, count: int) -> Game:
+        game = Game(count=count)
+        self.session.add(game)
         await self.session.flush()
-        return player
+        return game
