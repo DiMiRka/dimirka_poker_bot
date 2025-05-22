@@ -1,17 +1,20 @@
-from sqlalchemy import select
+import json
+from sqlalchemy import select, update
 from models.game import Game
 from repositories.base import BaseRepository
 
 
 class GameRepository(BaseRepository):
-    async def get_by_login(self, login: str) -> Game:
-        result = await self.session.execute(
-            select(Game).where(Game.login == login)
-        )
-        return result.scalar_one_or_none()
 
     async def create(self, count: int) -> Game:
         game = Game(count=count)
         self.session.add(game)
         await self.session.flush()
         return game
+
+    async def update(self, game: dict, game_id: int):
+        game = json.dumps(game, ensure_ascii=False)
+        result = await self.session.execute(
+            update(Game).where(Game.id == game_id).values(game=game)
+        )
+        return result

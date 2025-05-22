@@ -9,7 +9,7 @@ from keyboards.inline_kbs import (input_player_game_kb, start_game_kb, game_keyb
                                   back_players_keyboards, extra_players_keyboards)
 from db_hadler.db_class import Database
 from create_bot import bot
-from servise import create_game_db, get_players_db
+from servise import create_game_db, get_players_db, update_game_db
 
 pd.set_option('display.max_columns', None)  # Настройка таблицы pandas
 game_users = list()  # Список всех игроков в базе данных
@@ -191,7 +191,8 @@ async def result_chips(message: Message, state: FSMContext):
             out_player = player_list.pop(0)
             await message.answer(text=f'{out_player} на кармане:')
         else:  # Выводим итоги оконченной игры
-            await Database.update_game(game=game_data, game_id=game_id)
+            await update_game_db(game_data, game_id)
+            # await Database.update_game(game=game_data, game_id=game_id)
             await state.clear()
             text = await text_game()
             text += '\nИТОГИ 💰'
