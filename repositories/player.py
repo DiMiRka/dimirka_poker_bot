@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, update
 from models.game import Player
 from repositories.base import BaseRepository
 
@@ -17,9 +17,16 @@ class PlayerRepository(BaseRepository):
         await self.session.flush()
         return player
 
-    async def get_all_login(self):
+    async def get_all(self):
         result = await self.session.execute(
-            select(Player)
+            select(Player).order_by(Player.earned)
         )
         return result.scalars().all()
+
+    async def update(self, data: dict,):
+        for player, value in data.items():
+            await self.session.execute(
+                update(Player).
+                where(Player.login == player).
+                values(value))
 

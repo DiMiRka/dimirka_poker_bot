@@ -17,6 +17,11 @@ async def create_player_db(login: str):
 async def get_players_db():
     async with db.session() as session:
         repo = PlayerRepository(session)
-        players = await repo.get_all_login()
-        print(players)
+        players = await repo.get_all()
         return players
+
+
+async def update_player_db(data: dict):
+    async with db.session() as session:
+        repo = PlayerRepository(session)
+        await repo.update(data)

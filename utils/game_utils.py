@@ -7,7 +7,6 @@ from aiogram.fsm.context import FSMContext
 from keyboards.inline_kbs import (input_player_game_kb, start_game_kb, game_keyboards, purchase_players_keyboards,
                                   exit_players_keyboards, main_kb, game_admin_keyboards, change_purchase_players_keyboards,
                                   back_players_keyboards, extra_players_keyboards)
-from db_hadler.db_class import Database
 from create_bot import bot
 from servise import create_game_db, get_players_db, update_game_db
 
@@ -28,14 +27,13 @@ out_player = str()  # Учет игрока для выхода из игры
 
 def player_input(text):
     """Добавить игрока в текущую игру"""
-    global player_list, text_players, date, game_users, game_id
+    global player_list, text_players, date, game_users
     if text == 'новая игра':
         '''Обновляем учетные переменные по текущей игре'''
         player_list = list()
         text_players = str()
         date = str()
         game_users = list()
-        game_id = int()
     else:
         player_list.append(text)  # Добавляем игрока в список игроков текущей игры
         text_players += f'\n{text}'  # Актуализируем текст со списком игроков, участвующих в игре
@@ -46,7 +44,6 @@ async def update_users():
     global game_users
     users = await get_players_db()
     game_users = [user.login for user in users]
-    # game_users = await Database.get_users_bd()
 
 
 async def get_users():
@@ -73,28 +70,6 @@ async def get_players():
 def get_players_text():
     """Получить оформленный текст со списком игроков в игре"""
     return text_players
-
-
-async def update_date():
-    """Обновить дату последней игры из базы данных"""
-    global date
-    date = await Database.get_date()
-
-
-async def get_date():
-    """Получить дату текущей игры"""
-    return date
-
-
-async def update_game_id():
-    """Обновить id текущей игры"""
-    global game_id
-    game_id = await Database.get_game_id()
-
-
-async def get_game_id():
-    """Получить id текущей игры"""
-    return game_id
 
 
 async def update_add_on_player(call: CallbackQuery):
@@ -192,7 +167,6 @@ async def result_chips(message: Message, state: FSMContext):
             await message.answer(text=f'{out_player} на кармане:')
         else:  # Выводим итоги оконченной игры
             await update_game_db(game_data, game_id)
-            # await Database.update_game(game=game_data, game_id=game_id)
             await state.clear()
             text = await text_game()
             text += '\nИТОГИ 💰'
@@ -251,9 +225,6 @@ async def game_utils(call: CallbackQuery):
     global start_status, date, game_id
     if not start_status:
         date, game_id = await create_game_db(count=count)
-        # await Database.insert_new_game(count=count)
-        # await update_date()
-        # await update_game_id()
         text = await text_game()
         photo = FSInputFile('game_image.png')
         start_status = True

@@ -12,9 +12,12 @@ class GameRepository(BaseRepository):
         await self.session.flush()
         return game
 
-    async def update(self, game: dict, game_id: int):
-        game = json.dumps(game, ensure_ascii=False)
+    async def update(self, data: dict, game_id: int):
         result = await self.session.execute(
-            update(Game).where(Game.id == game_id).values(game=game)
+            update(Game).where(Game.id == game_id).values(game=data)
         )
         return result
+
+    async def get_all(self):
+        result = await self.session.execute(select(Game))
+        return result.scalars().all()

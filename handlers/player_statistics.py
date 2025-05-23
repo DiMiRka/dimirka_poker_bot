@@ -16,7 +16,7 @@ async def player_statistics(call: CallbackQuery):
     """Вывести статистику всех игроков по сыгранным играм"""
     async with ChatActionSender.typing(bot=bot, chat_id=call.message.chat.id):
         await asyncio.sleep(2)
-        await update_player_statistics(call.data)
+        await update_player_statistics()
         photo = FSInputFile('statistics_image.png')
         await bot.send_photo(chat_id=call.message.chat.id, photo=photo, caption='Статистика игроков 🏆',
                              show_caption_above_media=True)
@@ -27,17 +27,7 @@ async def player_statistics(message: Message):
     """Вывести статистику всех игроков по сыгранным играм"""
     async with ChatActionSender.typing(bot=bot, chat_id=message.chat.id):
         await asyncio.sleep(2)
-        await update_player_statistics(message.text)
+        await update_player_statistics()
         photo = FSInputFile('statistics_image.png')
         await bot.send_photo(chat_id=message.chat.id, photo=photo, caption='Статистика игроков 🏆',
                              show_caption_above_media=True)
-
-
-@statistics_router.callback_query(F.data == 'общая cтатистика игроков')
-async def all_player_player_statistics(call: CallbackQuery):
-    """Вывести статистику игроков по всем базам данных"""
-    await asyncio.sleep(2)
-    await update_player_statistics(call.data)
-    photo = FSInputFile('statistics_image.png')
-    await bot.send_photo(chat_id=call.message.chat.id, photo=photo, caption='Статистика игроков 🏆',
-                         show_caption_above_media=True)
