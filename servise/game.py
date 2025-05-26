@@ -1,4 +1,4 @@
-from db_hadler.database import db
+from db.database import db
 from repositories import GameRepository
 
 
