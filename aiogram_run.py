@@ -7,8 +7,6 @@ from handlers.start import start_router
 from handlers.game import game_router
 from handlers.player import player_router
 from handlers.player_statistics import statistics_router
-from db_hadler.db_class import Database
-from decouple import config
 
 
 async def set_commands():
@@ -36,5 +34,5 @@ async def main():
 
 
 if __name__ == "__main__":
-    db = Database(config('PG_LINK'))
+    # db = Database(config('PG_LINK'))
     asyncio.run(main())
