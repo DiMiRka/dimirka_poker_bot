@@ -1,4 +1,5 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from create_bot import admins
 
@@ -95,20 +96,20 @@ def game_admin_keyboards():
 
 def input_player_game_kb(game_users: list, player_list: list, start: bool):
     """Клавиатура добавления игроков в игру"""
-    kb_list = []
+    builder = InlineKeyboardBuilder()
     if not start:
         for player in game_users:
             if player not in player_list:
-                kb_list.append([InlineKeyboardButton(text=str(player), callback_data=f'игрок в старт {str(player)}')])
-        kb_list.append([InlineKeyboardButton(text='Готово 👌🏼', callback_data='стартуем')])
+                builder.button(text=str(player), callback_data=f'игрок в старт {str(player)}')
+        builder.adjust(3)
+        builder.row(InlineKeyboardButton(text='Готово 👌🏼', callback_data='стартуем'))
+
     else:
         for player in game_users:
             if player not in player_list:
-                kb_list.append([InlineKeyboardButton(text=str(player), callback_data=f'игрок в игру {str(player)}')])
-    keyboards = InlineKeyboardMarkup(
-        inline_keyboard=kb_list,
-        resize_keyboard=True
-    )
+                builder.button(text=str(player), callback_data=f'игрок в игру {str(player)}')
+        builder.adjust(3)
+    keyboards = builder.as_markup()
     return keyboards
 
 
