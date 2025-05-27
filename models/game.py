@@ -42,6 +42,16 @@ class Game(Base):
         ]
         return f"{self.date.day} {month_names[self.date.month - 1]} {self.date.year} г."
 
+    @property
+    def to_dict(self) -> dict:
+        """Возвращает словарь python"""
+        return {
+            "id": self.id,
+            "date": self.formatted_date,
+            "count": self.count,
+            "game": self.game
+        }
+
 
 class Player(Base):
     __tablename__ = "players"
