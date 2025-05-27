@@ -46,5 +46,5 @@ async def new_player_end(message: Message, state: FSMContext):
     await state.clear()
     async with ChatActionSender.typing(bot=bot, chat_id=message.from_user.id):
         await asyncio.sleep(2)
-        result = await create_player_db(message.text)
+        result = await create_player_db (message.text)
         await message.answer(result, reply_markup=None)

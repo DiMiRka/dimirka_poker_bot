@@ -71,6 +71,6 @@ async def update_player_statistics():
              cellLoc='center',
              rowLoc='center',
              colColours=['YellowGreen'] * 7)
-    plt.savefig(f'statistics_image.png', bbox_inches='tight')
+    plt.savefig(f'utils/statistics_image.png', bbox_inches='tight')
     print(tb)
     return None

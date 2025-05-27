@@ -34,5 +34,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    # db = Database(config('PG_LINK'))
     asyncio.run(main())

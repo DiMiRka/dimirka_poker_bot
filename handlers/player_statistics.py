@@ -17,7 +17,7 @@ async def player_statistics(call: CallbackQuery):
     async with ChatActionSender.typing(bot=bot, chat_id=call.message.chat.id):
         await asyncio.sleep(2)
         await update_player_statistics()
-        photo = FSInputFile('statistics_image.png')
+        photo = FSInputFile('utils/statistics_image.png')
         await bot.send_photo(chat_id=call.message.chat.id, photo=photo, caption='Статистика игроков 🏆',
                              show_caption_above_media=True)
 
@@ -28,6 +28,6 @@ async def player_statistics(message: Message):
     async with ChatActionSender.typing(bot=bot, chat_id=message.chat.id):
         await asyncio.sleep(2)
         await update_player_statistics()
-        photo = FSInputFile('statistics_image.png')
+        photo = FSInputFile('utils/statistics_image.png')
         await bot.send_photo(chat_id=message.chat.id, photo=photo, caption='Статистика игроков 🏆',
                              show_caption_above_media=True)
