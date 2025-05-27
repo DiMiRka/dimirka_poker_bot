@@ -1,6 +1,5 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import json
 
 from servise import get_games_db, update_player_db, get_players_db
 

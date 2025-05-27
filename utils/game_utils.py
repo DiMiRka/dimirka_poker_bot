@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 from aiogram.types import CallbackQuery, FSInputFile, Message
 from aiogram.fsm.context import FSMContext
 
-from keyboards.inline_kbs import (input_player_game_kb, start_game_kb, game_keyboards, purchase_players_keyboards,
-                                  exit_players_keyboards, main_kb, game_admin_keyboards, change_purchase_players_keyboards,
-                                  back_players_keyboards, extra_players_keyboards)
+from keyboards.start import (input_player_game_kb, start_game_kb, game_keyboards, purchase_players_keyboards,
+                             exit_players_keyboards, main_kb, game_admin_keyboards, change_purchase_players_keyboards,
+                             back_players_keyboards, extra_players_keyboards)
 from create_bot import bot
 from servise import create_game_db, get_players_db, update_game_db
 

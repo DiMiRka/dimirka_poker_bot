@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 import logging
 
 
-from keyboards.inline_kbs import (make_count, purchase)
+from keyboards.start import (make_count, purchase)
 from utils.game_utils import (player_input, input_players_start, input_players, update_users, update_count,
                               start_game, game_utils, input_players_game, add_on_players, update_add_on_player,
                               add_on_utils, player_out_game, start_out_player, result_chips, game_end_start,

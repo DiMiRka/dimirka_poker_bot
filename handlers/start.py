@@ -3,7 +3,7 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.state import State, StatesGroup
 
-from keyboards.inline_kbs import main_kb, admin_main_kb
+from keyboards.start import main_kb, admin_main_kb
 
 start_router = Router()
 

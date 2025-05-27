@@ -1,4 +1,3 @@
-import json
 from sqlalchemy import select, update
 from models.game import Game
 from repositories.base import BaseRepository
