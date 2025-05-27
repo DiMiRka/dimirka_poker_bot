@@ -1,10 +1,9 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from create_bot import admins
 
 
-def main_kb(user_telegram_id: int):
+async def main_kb(user_telegram_id: int):
     """"Клавиатура меню"""
     kb_list = [
         [InlineKeyboardButton(text="🃏 Начать игру", callback_data='начать игру')],
@@ -20,12 +19,14 @@ def main_kb(user_telegram_id: int):
     return keyboard
 
 
-def admin_main_kb():
+async def admin_main_kb():
     kb_list = [
-        [InlineKeyboardButton(text="📋 Статистика игроков", callback_data='cтатистика игроков')]
+        [InlineKeyboardButton(text="📅 Результаты прошедших игр", callback_data='прошлая игра')]
     ]
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=kb_list,
         resize_keyboard=True,
         one_time_keyboard=True)
     return keyboard
+
+

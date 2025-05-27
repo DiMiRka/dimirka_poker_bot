@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 from aiogram.types import CallbackQuery, FSInputFile, Message
 from aiogram.fsm.context import FSMContext
 
-from keyboards.start import (input_player_game_kb, start_game_kb, game_keyboards, purchase_players_keyboards,
-                             exit_players_keyboards, main_kb, game_admin_keyboards, change_purchase_players_keyboards,
-                             back_players_keyboards, extra_players_keyboards)
+from keyboards import (input_player_game_kb, start_game_kb, game_keyboards, purchase_players_keyboards,
+                       exit_players_keyboards, main_kb, game_admin_keyboards, change_purchase_players_keyboards,
+                       back_players_keyboards, extra_players_keyboards)
 from create_bot import bot
 from servise import create_game_db, get_players_db, update_game_db
 
@@ -92,17 +92,17 @@ async def input_players_start(call: CallbackQuery):
     """Добавить игроков в текущую игру перед стартом"""
     if call.data.startswith('фишка'):
         new_keyboards = input_player_game_kb(game_users=game_users, player_list=player_list, start=start_status)
-        await call.message.answer(text='Кто играет?', reply_markup=new_keyboards)
+        await call.message.answer(text='Кто играет?', reply_markup=await new_keyboards)
     else:
         player_input(call.data[14:])
         new_keyboards = input_player_game_kb(game_users=game_users, player_list=player_list, start=start_status)
-        await call.message.answer(text=f'В игре: {text_players}', reply_markup=new_keyboards)
+        await call.message.answer(text=f'В игре: {text_players}', reply_markup=await new_keyboards)
 
 
 async def input_players(call: CallbackQuery):
     """"Выбрать игрока для добавления в текущую игру"""
     new_keyboards = input_player_game_kb(game_users=game_users, player_list=player_list, start=start_status)
-    await call.message.answer(text=f'Кто эта жертва?👀', reply_markup=new_keyboards)
+    await call.message.answer(text=f'Кто эта жертва?👀', reply_markup=await new_keyboards)
 
 
 async def input_players_game(call: CallbackQuery):
@@ -111,13 +111,13 @@ async def input_players_game(call: CallbackQuery):
     game_data[call.data[13:]] = {'Закуп,фш.': 1000, 'Закуп,руб.': 1000 * count, 'Статус': 'В игре', 'Фишки': 0, 'Руб.': 0}
     photo = FSInputFile('utils/game_image.png')
     text = await text_game()
-    await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=game_keyboards(call.from_user.id), caption=text,
+    await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=await game_keyboards(call.from_user.id), caption=text,
                          show_caption_above_media=True)
 
 
 async def add_on_players(call: CallbackQuery):
     """Выбрать игрока для докупа фишек в текущую игру"""
-    await call.message.answer(text='Кто в проёбе?', reply_markup=purchase_players_keyboards(player_list))
+    await call.message.answer(text='Кто в проёбе?', reply_markup=await purchase_players_keyboards(player_list))
 
 
 async def add_on_utils(call: CallbackQuery):
@@ -128,13 +128,13 @@ async def add_on_utils(call: CallbackQuery):
     game_data[player]['Закуп,руб.'] = game_data[player].get('Закуп,руб.') + int(chips) * count
     photo = FSInputFile('utils/game_image.png')
     text = await text_game()
-    await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=game_keyboards(call.from_user.id), caption=text,
+    await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=await game_keyboards(call.from_user.id), caption=text,
                          show_caption_above_media=True)
 
 
 async def start_out_player(call: CallbackQuery):
     """Выбрать игрока для выхода из текущей игры"""
-    await call.message.answer(text='Кто по съебам?', reply_markup=exit_players_keyboards(player_list))
+    await call.message.answer(text='Кто по съебам?', reply_markup=await exit_players_keyboards(player_list))
 
 
 async def player_out_game(call: CallbackQuery):
@@ -156,7 +156,7 @@ async def result_chips(message: Message, state: FSMContext):
         game_data[out_player]['Руб.'] = (chips * count) - game_data[out_player].get('Закуп,руб.')
         photo = FSInputFile('utils/game_image.png')
         text = await text_game()
-        await bot.send_photo(chat_id=message.chat.id, photo=photo, reply_markup=game_keyboards(message.from_user.id), caption=text,
+        await bot.send_photo(chat_id=message.chat.id, photo=photo, reply_markup=await game_keyboards(message.from_user.id), caption=text,
                              show_caption_above_media=True)
     else:  # В случае окончания игры
         chips = int(message.text)
@@ -174,7 +174,7 @@ async def result_chips(message: Message, state: FSMContext):
             photo = FSInputFile('utils/game_image.png')
             await bot.send_photo(chat_id=message.chat.id, photo=photo, reply_markup=None, caption=text,
                                  show_caption_above_media=True)
-            await message.answer(text='До следующего раза, брат 🤙', reply_markup=main_kb(message.from_user.id))
+            await message.answer(text='До следующего раза, брат 🤙', reply_markup=await main_kb(message.from_user.id))
 
 
 async def text_start():
@@ -192,7 +192,7 @@ async def start_game(call: CallbackQuery):
         game_data[player] = {'Закуп,фш.': 1000, 'Закуп,руб.': 1000 * count, 'Статус': 'В игре',
                              'Фишки': 0, 'Руб.': 0}
     text = await text_start()
-    await call.message.answer(text=text, reply_markup=start_game_kb())
+    await call.message.answer(text=text, reply_markup=await start_game_kb())
 
 
 async def text_game():
@@ -229,7 +229,7 @@ async def game_utils(call: CallbackQuery):
         text = await text_game()
         photo = FSInputFile('utils/game_image.png')
         start_status = True
-        await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=game_keyboards(call.from_user.id), caption=text,
+        await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=await game_keyboards(call.from_user.id), caption=text,
                              show_caption_above_media=True)
     else:
         pass
@@ -246,12 +246,12 @@ async def game_end_start(call: CallbackQuery):
 
 async def admin_board_game(call: CallbackQuery):
     """Админ панель в процессе игры"""
-    await call.message.answer('Что делаем?', reply_markup=game_admin_keyboards())
+    await call.message.answer('Что делаем?', reply_markup=await game_admin_keyboards())
 
 
 async def change_purchase_players(call: CallbackQuery):
     """Выбрать игрока для смены закупа в процессе игры"""
-    await call.message.answer(text='Кто?', reply_markup=change_purchase_players_keyboards(player_list))
+    await call.message.answer(text='Кто?', reply_markup=await change_purchase_players_keyboards(player_list))
 
 
 async def change_purchase_utils(message: Message):
@@ -262,13 +262,13 @@ async def change_purchase_utils(message: Message):
     game_data[player]['Закуп,руб.'] = int(chips) * count
     photo = FSInputFile('utils/game_image.png')
     text = await text_game()
-    await bot.send_photo(chat_id=message.chat.id, photo=photo, reply_markup=game_keyboards(message.from_user.id), caption=text,
+    await bot.send_photo(chat_id=message.chat.id, photo=photo, reply_markup=await game_keyboards(message.from_user.id), caption=text,
                          show_caption_above_media=True)
 
 
 async def game_back_player(call: CallbackQuery):
     """Выбрать игрока которого вернем в игру"""
-    await call.message.answer(text='Кто?', reply_markup=back_players_keyboards(player_out_list))
+    await call.message.answer(text='Кто?', reply_markup=await back_players_keyboards(player_out_list))
 
 
 async def game_back_player_end(call: CallbackQuery):
@@ -280,14 +280,14 @@ async def game_back_player_end(call: CallbackQuery):
     game_data[player]['Руб.'] = 0
     photo = FSInputFile('utils/game_image.png')
     text = await text_game()
-    await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=game_keyboards(call.from_user.id),
+    await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=await game_keyboards(call.from_user.id),
                          caption=text,
                          show_caption_above_media=True)
 
 
 async def out_extra_player(call: CallbackQuery):
     """Выбрать игрока для выхода из текущей игры"""
-    await call.message.answer(text='Кто?', reply_markup=extra_players_keyboards(player_list))
+    await call.message.answer(text='Кто?', reply_markup=await extra_players_keyboards(player_list))
 
 
 async def delete_extra_player(call: CallbackQuery):
@@ -297,6 +297,6 @@ async def delete_extra_player(call: CallbackQuery):
     del game_data[player]
     photo = FSInputFile('utils/game_image.png')
     text = await text_game()
-    await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=game_keyboards(call.from_user.id),
+    await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=await game_keyboards(call.from_user.id),
                          caption=text,
                          show_caption_above_media=True)

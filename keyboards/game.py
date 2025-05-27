@@ -1,8 +1,10 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from create_bot import admins
 
-def make_count():
+
+async def make_count():
     """Клавиатура коэффициента фишки к рублю"""
     kb_list = [
         [InlineKeyboardButton(text='1 руб.', callback_data='фишка 1')],
@@ -19,7 +21,7 @@ def make_count():
     return keyboards
 
 
-def start_game_kb():
+async def start_game_kb():
     """Кнопка запуска игры"""
     kb_list = [
         [InlineKeyboardButton(text='Старт ✔️', callback_data='битва')]
@@ -32,7 +34,7 @@ def start_game_kb():
     return keyboards
 
 
-def game_keyboards(user_telegram_id: int):
+async def game_keyboards(user_telegram_id: int):
     """Клавиатура процесса игры"""
     kb_list = [
         [InlineKeyboardButton(text='Добавить игрока 🎣', callback_data='добавить игрока')],
@@ -51,7 +53,7 @@ def game_keyboards(user_telegram_id: int):
     return keyboards
 
 
-def game_admin_keyboards():
+async def game_admin_keyboards():
     """Клавиатура админ панели в процессе игры"""
     kb_list = [
         [InlineKeyboardButton(text='Поменять закуп игрока 💲', callback_data='поменять закуп')],
@@ -66,7 +68,7 @@ def game_admin_keyboards():
     return keyboards
 
 
-def input_player_game_kb(game_users: list, player_list: list, start: bool):
+async def input_player_game_kb(game_users: list, player_list: list, start: bool):
     """Клавиатура добавления игроков в игру"""
     builder = InlineKeyboardBuilder()
     if not start:
@@ -85,7 +87,7 @@ def input_player_game_kb(game_users: list, player_list: list, start: bool):
     return keyboards
 
 
-def purchase_players_keyboards(players: list):
+async def purchase_players_keyboards(players: list):
     """Клавиатура выбора игрока из текущей игры для закупа фишек"""
     kb_list = []
     for player in players:
@@ -98,7 +100,7 @@ def purchase_players_keyboards(players: list):
     return keyboards
 
 
-def purchase():
+async def purchase():
     """Клавиатура выбора количества фишек для закупа"""
     kb_list = [
         [InlineKeyboardButton(text='500 фишек', callback_data='фишки 500')],
@@ -113,7 +115,7 @@ def purchase():
     return keyboards
 
 
-def exit_players_keyboards(players: list):
+async def exit_players_keyboards(players: list):
     """Клавиатура выбора игрока из текущей игры для выхода из игры"""
     kb_list = []
     for player in players:
@@ -126,7 +128,7 @@ def exit_players_keyboards(players: list):
     return keyboards
 
 
-def back_players_keyboards(players: list):
+async def back_players_keyboards(players: list):
     """Клавиатура выбора игрока вышедшего из текущей игры для возврата в игру"""
     kb_list = []
     print(players)
@@ -141,7 +143,7 @@ def back_players_keyboards(players: list):
     return keyboards
 
 
-def extra_players_keyboards(players: list):
+async def extra_players_keyboards(players: list):
     """Клавиатура выбора игрока из текущей игры для удаления из игры"""
     kb_list = []
     for player in players:
@@ -154,7 +156,7 @@ def extra_players_keyboards(players: list):
     return keyboards
 
 
-def exit_player(chips):
+async def exit_player(chips):
     """Кнопка подтверждения выхода игрока из текущей игры"""
     kb_list = [
         [InlineKeyboardButton(text='Подтвердить', callback_data=chips)]
@@ -167,7 +169,7 @@ def exit_player(chips):
     return keyboards
 
 
-def change_purchase_players_keyboards(players: list):
+async def change_purchase_players_keyboards(players: list):
     """Клавиатура выбора игрока из текущей игры для закупа фишек"""
     kb_list = []
     for player in players:

@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 import logging
 
 
-from keyboards.start import (make_count, purchase)
+from keyboards import make_count, purchase
 from utils.game_utils import (player_input, input_players_start, input_players, update_users, update_count,
                               start_game, game_utils, input_players_game, add_on_players, update_add_on_player,
                               add_on_utils, player_out_game, start_out_player, result_chips, game_end_start,
@@ -29,14 +29,14 @@ class ResultGame(StatesGroup):
 async def start(call: CallbackQuery):
     player_input('новая игра')
     await update_users()
-    await call.message.answer('1 фишка равняется:', reply_markup=make_count())
+    await call.message.answer('1 фишка равняется:', reply_markup=await make_count())
 
 
 @game_router.message(Command('start_game'))
 async def start(message: Message):
     player_input('новая игра')
     await update_users()
-    await message.answer('1 фишка равняется:', reply_markup=make_count())
+    await message.answer('1 фишка равняется:', reply_markup=await make_count())
 
 
 @game_router.callback_query(lambda call: call.data.startswith('фишка') or call.data.startswith('игрок в старт'))
@@ -83,7 +83,7 @@ async def add_on_player(call: CallbackQuery):
 @game_router.callback_query(lambda call: call.data.startswith('закуп'))
 async def add_on(call: CallbackQuery):
     await update_add_on_player(call)
-    await call.message.answer(text='Сколько докупаем?', reply_markup=purchase())
+    await call.message.answer(text='Сколько докупаем?', reply_markup=await purchase())
     logging.info(f'{call.data}')
 
 
