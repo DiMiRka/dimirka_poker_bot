@@ -8,7 +8,7 @@ from keyboards import (input_player_game_kb, start_game_kb, game_keyboards, purc
                        exit_players_keyboards, main_kb, game_admin_keyboards, change_purchase_players_keyboards,
                        back_players_keyboards, extra_players_keyboards)
 from create_bot import bot
-from servise import create_game_db, get_players_db, update_game_db
+from services import create_game_db, get_players_db, update_game_db
 
 pd.set_option('display.max_columns', None)  # Настройка таблицы pandas
 game_users = list()  # Список всех игроков в базе данных

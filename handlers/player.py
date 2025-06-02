@@ -7,7 +7,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.utils.chat_action import ChatActionSender
 
 from create_bot import bot
-from servise import create_player_db
+from services import create_player_db
 
 player_router = Router()
 

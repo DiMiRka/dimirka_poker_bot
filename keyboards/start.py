@@ -5,9 +5,6 @@ from create_bot import admins
 
 async def main_kb(user_telegram_id: int):
     """"Клавиатура меню"""
-    print('------------------------')
-    print(user_telegram_id)
-    print('------------------------')
     kb_list = [
         [InlineKeyboardButton(text="🃏 Начать игру", callback_data='начать игру')],
         [InlineKeyboardButton(text="🦈 Добавить игрока", callback_data='новый игрок')],

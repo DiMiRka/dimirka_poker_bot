@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from servise import get_result_games_db, update_player_db, get_players_db, get_games_db
+from services import get_result_games_db, update_player_db, get_players_db, get_games_db
 from keyboards import last_game_kb
 
 

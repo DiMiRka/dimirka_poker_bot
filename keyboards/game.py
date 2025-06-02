@@ -38,8 +38,8 @@ async def game_keyboards(user_telegram_id: int):
     """Клавиатура процесса игры"""
     kb_list = [
         [InlineKeyboardButton(text='Добавить игрока 🎣', callback_data='добавить игрока')],
-        [InlineKeyboardButton(text='Докуп 💲', callback_data='докупить')],
-        [InlineKeyboardButton(text='Вышел 🚪', callback_data='выйти')],
+        [InlineKeyboardButton(text='Докупить игрока 💲', callback_data='докупить')],
+        [InlineKeyboardButton(text='Выход игрока 🚪', callback_data='выйти')],
         [InlineKeyboardButton(text='Закончить игру 🔚', callback_data='закончить')]
     ]
     if user_telegram_id in admins:
