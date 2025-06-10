@@ -135,7 +135,7 @@ DimirPokerBot/
 3. Нажать готово и старт
 
    </div>
-   <div style="flex: 1>
+   <div style="flex: 1">
 
 ![Как создать новую игру](assets/demo/start_game.gif)
 *Создание новой покерной игры в боте*
