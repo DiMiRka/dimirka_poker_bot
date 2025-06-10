@@ -138,7 +138,6 @@ DimirPokerBot/
    <div style="flex: 1">
 
 ![Как создать новую игру](assets/demo/start_game.gif)
-*Создание новой покерной игры в боте*
 
    </div>
 </div>
