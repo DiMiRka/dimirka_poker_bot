@@ -127,7 +127,7 @@ DimirPokerBot/
 ## 🃏 Пример работы
 
 <div style="display: flex; flex-wrap: wrap; gap: 20px; ">
-   <div style="flex: 1">
+   <div style="flex: 1; min-width: 300px;">
 
 ### Запуск процесса игры
 1. Выбор коэфициента одной фишки к рублю
@@ -135,7 +135,7 @@ DimirPokerBot/
 3. Нажать готово и старт
 
    </div>
-   <div style="flex: 1">
+   <div style="flex: 1; min-width: 400px;">
 
 ![Как создать новую игру](assets/demo/start_game.gif)
 
