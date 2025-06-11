@@ -132,7 +132,7 @@ DimirPokerBot/
 ### Запуск бота
 Команда **start** запускает стартовое меню бота
 
-<img src="assets/start.jpg" width="65%">
+<img src="assets/start.jpg" width="300">
 
 ### Добавить игрока в базу данных
 <div>
