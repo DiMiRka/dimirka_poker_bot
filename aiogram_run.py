@@ -14,7 +14,8 @@ async def set_commands():
     commands = [BotCommand(command='start', description='Запустить бота'),
                 BotCommand(command='start_game', description='Начать новую игру'),
                 BotCommand(command='new_player', description='Добавить игрока'),
-                BotCommand(command='statics', description='Статистика игроков')]
+                BotCommand(command='statics', description='Статистика игроков'),
+                BotCommand(command='past_games', description='Прошлые игры')]
     await bot.set_my_commands(commands, BotCommandScopeDefault())
 
 

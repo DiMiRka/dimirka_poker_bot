@@ -8,7 +8,8 @@ async def main_kb(user_telegram_id: int):
     kb_list = [
         [InlineKeyboardButton(text="🃏 Начать игру", callback_data='начать игру')],
         [InlineKeyboardButton(text="🦈 Добавить игрока", callback_data='новый игрок')],
-        [InlineKeyboardButton(text="📋 Статистика игроков", callback_data='cтатистика игроков')]
+        [InlineKeyboardButton(text="📋 Статистика игроков", callback_data='cтатистика игроков')],
+        [InlineKeyboardButton(text="📅 Прошлые игры", callback_data='прошлая игра')]
     ]
     if user_telegram_id in admins:
         kb_list.append([InlineKeyboardButton(text="⚙️ Админ панель", callback_data='админ панель')])
