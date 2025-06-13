@@ -3,6 +3,7 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
+from aiogram.filters import Command
 
 from keyboards.start import main_kb, admin_main_kb
 from utils.statistic_utils import get_last_games, get_last_game
@@ -33,6 +34,15 @@ async def last_game_start(call: CallbackQuery, state: FSMContext):
     keyboards, games = await get_last_games()
     await state.set_data({"games": games})
     await call.message.answer('Какую игру хочешь чекнуть?', reply_markup=keyboards)
+    await state.set_state(Game.last_games.state)
+
+
+@start_router.message(Command('past_games'))
+async def last_game_start(message: Message, state: FSMContext):
+    await state.clear()
+    keyboards, games = await get_last_games()
+    await state.set_data({"games": games})
+    await message.answer('Какую игру хочешь чекнуть?', reply_markup=keyboards)
     await state.set_state(Game.last_games.state)
 
 
