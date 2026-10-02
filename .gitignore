@@ -1,7 +1,12 @@
 venv/
 .env
+.env.*
+!.env.example
+.claude/
 *.pyc
 __pycache__/
+utils/*.png
+utils/photo/*.png
 .pytest_cache/
 .idea/
 *.log

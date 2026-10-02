@@ -44,7 +44,7 @@ Dimir Poker Bot <br>
     pip install -r requirements.txt
    ```
 4. Настройка конфигурации:\
-Создайте файл .env в корне проекта:
+Скопируйте `.env.example` в `.env` в корне проекта и заполните своими значениями:
     ```ini
     TOKEN=ваш_токен_бота
     ADMINS=ваш_telegram_id
