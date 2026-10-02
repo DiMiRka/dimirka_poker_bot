@@ -138,8 +138,8 @@ async def add_on(call: CallbackQuery, state: FSMContext):
 
 @game_router.message(ChangePurchase.change)
 async def change_purchase(message: Message, state: FSMContext):
-    await change_purchase_utils(message)
-    await state.clear()
+    if await change_purchase_utils(message):
+        await state.clear()
 
 
 @game_router.callback_query(lambda call: call.data == 'возврат игрока')

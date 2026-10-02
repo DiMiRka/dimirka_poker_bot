@@ -134,23 +134,33 @@ async def player_out_game(call: CallbackQuery):
     await call.message.answer(text='Количество фишек на кармане?', reply_markup=None)
 
 
+async def _read_chips(message: Message) -> int | None:
+    try:
+        chips = int(message.text)
+    except (TypeError, ValueError):
+        chips = -1
+    if chips < 0:
+        await message.answer('Введите количество фишек целым числом, не меньше 0.')
+        return None
+    return chips
+
+
 async def result_chips(message: Message, state: FSMContext):
     """Подсчитать результаты вышедшего игрока и обновить статус на Вышел"""
     game = get_game(message.chat.id)
+    chips = await _read_chips(message)
+    if chips is None:
+        return
+    result = game.game_data[game.out_player]
+    result['Статус'] = 'Вышел'
+    result['Фишки'] = chips
+    result['Руб.'] = chips * game.count - result['Закуп,руб.']
     if game.start_status:  # В случае выхода игрока в процессе игры
         await state.clear()
-        chips = int(message.text)
-        game.game_data[game.out_player]['Статус'] = 'Вышел'
-        game.game_data[game.out_player]['Фишки'] = chips
-        game.game_data[game.out_player]['Руб.'] = (chips * game.count) - game.game_data[game.out_player].get('Закуп,руб.')
         text, photo = await text_game(message.chat.id)
         await bot.send_photo(chat_id=message.chat.id, photo=photo, reply_markup=await game_keyboards(message.from_user.id), caption=text,
                              show_caption_above_media=True)
     else:  # В случае окончания игры
-        chips = int(message.text)
-        game.game_data[game.out_player]['Статус'] = 'Вышел'
-        game.game_data[game.out_player]['Фишки'] = chips
-        game.game_data[game.out_player]['Руб.'] = (chips * game.count) - game.game_data[game.out_player].get('Закуп,руб.')
         if game.player_list:  # Зацикливаем процесс подсчета результатов в конце игры до выхода всех игроков
             game.out_player = game.player_list.pop(0)
             await message.answer(text=f'{game.out_player} на кармане:')
@@ -230,16 +240,19 @@ async def change_purchase_players(call: CallbackQuery):
     await call.message.answer(text='Кто?', reply_markup=await change_purchase_players_keyboards(game.player_list))
 
 
-async def change_purchase_utils(message: Message):
+async def change_purchase_utils(message: Message) -> bool:
     """Поменять игроку докуп в текущей игре"""
     game = get_game(message.chat.id)
-    chips = message.text
+    chips = await _read_chips(message)
+    if chips is None:
+        return False
     player = game.add_bank_player
-    game.game_data[player]['Закуп,фш.'] = int(chips)
-    game.game_data[player]['Закуп,руб.'] = int(chips) * game.count
+    game.game_data[player]['Закуп,фш.'] = chips
+    game.game_data[player]['Закуп,руб.'] = chips * game.count
     text, photo = await text_game(message.chat.id)
     await bot.send_photo(chat_id=message.chat.id, photo=photo, reply_markup=await game_keyboards(message.from_user.id), caption=text,
                          show_caption_above_media=True)
+    return True
 
 
 async def game_back_player(call: CallbackQuery):

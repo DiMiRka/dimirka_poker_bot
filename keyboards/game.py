@@ -131,9 +131,7 @@ async def exit_players_keyboards(players: list):
 async def back_players_keyboards(players: list):
     """Клавиатура выбора игрока вышедшего из текущей игры для возврата в игру"""
     kb_list = []
-    print(players)
     for player in players:
-        print(player)
         kb_list.append([InlineKeyboardButton(text=player, callback_data=f'вернуть {player}')])
     keyboards = InlineKeyboardMarkup(
         inline_keyboard=kb_list,
