@@ -14,6 +14,7 @@ import aiogram.types
 import aiogram.fsm.context
 
 from utils.game_state import games, get_game
+from utils.table_image import render_table
 
 
 def load_game_utils(source=None):

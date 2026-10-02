@@ -1,7 +1,3 @@
-from io import BytesIO
-import pandas as pd
-import matplotlib.pyplot as plt
-
 from aiogram.types import CallbackQuery, BufferedInputFile, Message
 from aiogram.fsm.context import FSMContext
 
@@ -11,8 +7,7 @@ from keyboards import (input_player_game_kb, start_game_kb, game_keyboards, purc
 from create_bot import bot
 from services import create_game_db, get_players_db, update_game_db
 from utils.game_state import get_game, reset_game
-
-pd.set_option('display.max_columns', None)  # Настройка таблицы pandas
+from utils.table_image import render_table
 
 
 def player_input(chat_id: int, text):
@@ -198,22 +193,8 @@ async def text_game(chat_id: int):
         table_game.setdefault('Игрок', []).append(key)
         for k, v in game.game_data.get(key).items():
             table_game.setdefault(k, []).append(v)
-    tb = pd.DataFrame.from_dict(table_game)
-    fig, ax = plt.subplots(figsize=(10, 5))
-    fig.set_size_inches(6, 4)
-    fig.set_facecolor('#4f4f4f')
-    ax.axis('tight')
-    ax.axis('off')
-    ax.table(cellText=tb.values,
-             colLabels=tb.columns,
-             loc='center',
-             cellLoc='center',
-             rowLoc='center',
-             colColours=['YellowGreen'] * 6)
-    image = BytesIO()
-    fig.savefig(image, format='png', bbox_inches='tight')
-    plt.close(fig)
-    return text, BufferedInputFile(image.getvalue(), filename='game.png')
+    image = await render_table(table_game)
+    return text, BufferedInputFile(image, filename='game.png')
 
 
 async def game_utils(call: CallbackQuery):

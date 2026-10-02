@@ -1,6 +1,6 @@
 from aiogram import Router, F
 from aiogram.filters import CommandStart
-from aiogram.types import Message, CallbackQuery, FSInputFile
+from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command
@@ -50,8 +50,7 @@ async def last_game_start(message: Message, state: FSMContext):
 async def last_game_end(call: CallbackQuery, state: FSMContext):
     games = await state.get_data()
     game = next((game for game in games["games"] if game["date"] == call.data[11:]))
-    text = await get_last_game(game)
-    photo = FSInputFile('utils/last_game_image.png')
+    text, photo = await get_last_game(game)
     await bot.send_photo(chat_id=call.message.chat.id, photo=photo,
                          reply_markup=await main_kb(call.from_user.id), caption=text, show_caption_above_media=True)
 

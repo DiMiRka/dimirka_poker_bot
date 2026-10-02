@@ -1,6 +1,6 @@
-import pandas as pd
-import matplotlib.pyplot as plt
+from aiogram.types import BufferedInputFile
 
+from utils.table_image import render_table
 from services import get_result_games_db, update_player_db, get_players_db, get_games_db
 from keyboards import last_game_kb
 
@@ -58,22 +58,8 @@ async def update_player_statistics():
     for n in statistics_list:
         for k, v in n.items():
             table_statistics.setdefault(k, []).append(v)
-    tb = pd.DataFrame.from_dict(table_statistics)
-    fig, ax = plt.subplots(figsize=(10, 5))
-    fig.set_size_inches(8, 8)
-    fig.canvas.manager.full_screen_toggle()
-    fig.set_facecolor('#4f4f4f')
-    ax.axis('tight')
-    ax.axis('off')
-    ax.table(cellText=tb.values,
-             colLabels=tb.columns,
-             loc='center',
-             cellLoc='center',
-             rowLoc='center',
-             colColours=['YellowGreen'] * 7)
-    plt.savefig(f'utils/statistics_image.png', bbox_inches='tight')
-    print(tb)
-    return None
+    image = await render_table(table_statistics, size=(8, 8))
+    return BufferedInputFile(image, filename='statistics.png')
 
 
 async def get_last_games():
@@ -91,19 +77,5 @@ async def get_last_game(game: dict):
         table_game.setdefault('Игрок', []).append(key)
         for k, v in game["game"].get(key).items():
             table_game.setdefault(k, []).append(v)
-    tb = pd.DataFrame.from_dict(table_game)
-    fig, ax = plt.subplots(figsize=(10, 5))
-    fig.set_size_inches(6, 4)
-    fig.canvas.manager.full_screen_toggle()
-    fig.set_facecolor('#4f4f4f')
-    ax.axis('tight')
-    ax.axis('off')
-    ax.table(cellText=tb.values,
-             colLabels=tb.columns,
-             loc='center',
-             cellLoc='center',
-             rowLoc='center',
-             colColours=['YellowGreen'] * 6)
-    plt.savefig(f'utils/last_game_image.png', bbox_inches='tight')
-    print(tb)
-    return text
+    image = await render_table(table_game)
+    return text, BufferedInputFile(image, filename='last_game.png')
