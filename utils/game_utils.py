@@ -67,7 +67,7 @@ async def update_change_on_player(call: CallbackQuery):
     game.add_bank_player = call.data[9:]
 
 
-async def update_out_layer(call: CallbackQuery):
+async def _update_out_layer(call: CallbackQuery):
     game = get_game(call.message.chat.id)
     game.out_player = call.data[6:]
 
@@ -96,7 +96,7 @@ async def input_players_game(call: CallbackQuery):
     game = get_game(call.message.chat.id)
     player_input(call.message.chat.id, call.data[13:])
     game.game_data[call.data[13:]] = {'Закуп,фш.': 1000, 'Закуп,руб.': 1000 * game.count, 'Статус': 'В игре', 'Фишки': 0, 'Руб.': 0}
-    text, photo = await text_game(call.message.chat.id)
+    text, photo = await _text_game(call.message.chat.id)
     await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=await game_keyboards(call.from_user.id), caption=text,
                          show_caption_above_media=True)
 
@@ -114,7 +114,7 @@ async def add_on_utils(call: CallbackQuery):
     player = game.add_bank_player
     game.game_data[player]['Закуп,фш.'] = game.game_data[player].get('Закуп,фш.') + int(chips)
     game.game_data[player]['Закуп,руб.'] = game.game_data[player].get('Закуп,руб.') + int(chips) * game.count
-    text, photo = await text_game(call.message.chat.id)
+    text, photo = await _text_game(call.message.chat.id)
     await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=await game_keyboards(call.from_user.id), caption=text,
                          show_caption_above_media=True)
 
@@ -128,7 +128,7 @@ async def start_out_player(call: CallbackQuery):
 async def player_out_game(call: CallbackQuery):
     """Определить количество фишек игрока на выходе из игры"""
     game = get_game(call.message.chat.id)
-    await update_out_layer(call)
+    await _update_out_layer(call)
     game.player_out_list.append(game.out_player)
     game.player_list.remove(game.out_player)
     await call.message.answer(text='Количество фишек на кармане?', reply_markup=None)
@@ -140,7 +140,7 @@ async def _read_chips(message: Message) -> int | None:
     except (TypeError, ValueError):
         chips = -1
     if chips < 0:
-        await message.answer('Введите количество фишек целым числом, не меньше 0.')
+        await message.answer('Не тупи, бро, введи количество фишек целым числом не меньше 0')
         return None
     return chips
 
@@ -157,7 +157,7 @@ async def result_chips(message: Message, state: FSMContext):
     result['Руб.'] = chips * game.count - result['Закуп,руб.']
     if game.start_status:  # В случае выхода игрока в процессе игры
         await state.clear()
-        text, photo = await text_game(message.chat.id)
+        text, photo = await _text_game(message.chat.id)
         await bot.send_photo(chat_id=message.chat.id, photo=photo, reply_markup=await game_keyboards(message.from_user.id), caption=text,
                              show_caption_above_media=True)
     else:  # В случае окончания игры
@@ -167,14 +167,14 @@ async def result_chips(message: Message, state: FSMContext):
         else:  # Выводим итоги оконченной игры
             await update_game_db(game.game_data, game.game_id)
             await state.clear()
-            text, photo = await text_game(message.chat.id)
+            text, photo = await _text_game(message.chat.id)
             text += '\nИТОГИ 💰'
             await bot.send_photo(chat_id=message.chat.id, photo=photo, reply_markup=None, caption=text,
                                  show_caption_above_media=True)
             await message.answer(text='До следующего раза, брат 🤙', reply_markup=await main_kb(message.from_user.id))
 
 
-async def text_start(chat_id: int):
+async def _text_start(chat_id: int):
     """Оформление текста перед стартом игры"""
     game = get_game(chat_id)
     text = 'Ну полетели 🎰\n-------------------'
@@ -190,11 +190,11 @@ async def start_game(call: CallbackQuery):
     for player in game.player_list:
         game.game_data[player] = {'Закуп,фш.': 1000, 'Закуп,руб.': 1000 * game.count, 'Статус': 'В игре',
                              'Фишки': 0, 'Руб.': 0}
-    text = await text_start(call.message.chat.id)
+    text = await _text_start(call.message.chat.id)
     await call.message.answer(text=text, reply_markup=await start_game_kb())
 
 
-async def text_game(chat_id: int):
+async def _text_game(chat_id: int):
     """Оформление текста игры"""
     game = get_game(chat_id)
     text = f'Игра {game.date}\nКоэффициент: 1 к {game.count}'
@@ -212,7 +212,7 @@ async def game_utils(call: CallbackQuery):
     game = get_game(call.message.chat.id)
     if not game.start_status:
         game.date, game.game_id = await create_game_db(count=game.count)
-        text, photo = await text_game(call.message.chat.id)
+        text, photo = await _text_game(call.message.chat.id)
         game.start_status = True
         await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=await game_keyboards(call.from_user.id), caption=text,
                              show_caption_above_media=True)
@@ -249,7 +249,7 @@ async def change_purchase_utils(message: Message) -> bool:
     player = game.add_bank_player
     game.game_data[player]['Закуп,фш.'] = chips
     game.game_data[player]['Закуп,руб.'] = chips * game.count
-    text, photo = await text_game(message.chat.id)
+    text, photo = await _text_game(message.chat.id)
     await bot.send_photo(chat_id=message.chat.id, photo=photo, reply_markup=await game_keyboards(message.from_user.id), caption=text,
                          show_caption_above_media=True)
     return True
@@ -269,7 +269,7 @@ async def game_back_player_end(call: CallbackQuery):
     game.game_data[player]['Статус'] = 'В игре'
     game.game_data[player]['Фишки'] = 0
     game.game_data[player]['Руб.'] = 0
-    text, photo = await text_game(call.message.chat.id)
+    text, photo = await _text_game(call.message.chat.id)
     await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=await game_keyboards(call.from_user.id),
                          caption=text,
                          show_caption_above_media=True)
@@ -287,7 +287,7 @@ async def delete_extra_player(call: CallbackQuery):
     player = call.data.split()[1]
     game.player_list.remove(player)
     del game.game_data[player]
-    text, photo = await text_game(call.message.chat.id)
+    text, photo = await _text_game(call.message.chat.id)
     await bot.send_photo(chat_id=call.message.chat.id, photo=photo, reply_markup=await game_keyboards(call.from_user.id),
                          caption=text,
                          show_caption_above_media=True)

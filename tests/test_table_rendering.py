@@ -48,7 +48,7 @@ class TableRenderingTests(unittest.IsolatedAsyncioTestCase):
         get_game(10).game_data = self.results
         get_game(10).count = 1
 
-    async def assert_loop_runs_during_render(self, operation):
+    async def _assert_loop_runs_during_render(self, operation):
         loop = asyncio.get_running_loop()
         released = threading.Event()
         observations = []
@@ -67,14 +67,14 @@ class TableRenderingTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(observations[0][1], 'Event loop was blocked during rendering')
 
     async def test_current_game_does_not_block_event_loop(self):
-        await self.assert_loop_runs_during_render(lambda: game_utils.text_game(10))
+        await self._assert_loop_runs_during_render(lambda: game_utils._text_game(10))
 
     async def test_statistics_does_not_block_event_loop(self):
-        await self.assert_loop_runs_during_render(statistics.update_player_statistics)
+        await self._assert_loop_runs_during_render(statistics.update_player_statistics)
 
     async def test_past_game_does_not_block_event_loop(self):
         game = {'date': '02.10.2026', 'count': 1, 'game': self.results}
-        await self.assert_loop_runs_during_render(lambda: statistics.get_last_game(game))
+        await self._assert_loop_runs_during_render(lambda: statistics.get_last_game(game))
 
     async def test_concurrent_requests_return_valid_independent_images(self):
         active = 0
@@ -93,7 +93,7 @@ class TableRenderingTests(unittest.IsolatedAsyncioTestCase):
         game = {'date': '02.10.2026', 'count': 1, 'game': self.results}
         with patch.object(Figure, 'savefig', savefig):
             current, stats, past = await asyncio.gather(
-                game_utils.text_game(10), statistics.update_player_statistics(),
+                game_utils._text_game(10), statistics.update_player_statistics(),
                 statistics.get_last_game(game),
             )
         self.assertEqual(maximum, 1)
@@ -118,7 +118,7 @@ class TableRenderingTests(unittest.IsolatedAsyncioTestCase):
             return b'image'
 
         with patch.object(table_image, '_render_table', render):
-            task = asyncio.create_task(game_utils.text_game(10))
+            task = asyncio.create_task(game_utils._text_game(10))
             try:
                 await asyncio.wait_for(entered.wait(), timeout=2)
                 self.results['Alice']['Закуп,руб.'] = 2000

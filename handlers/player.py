@@ -18,7 +18,7 @@ class Player(StatesGroup):
 
 
 @player_router.callback_query(F.data == 'новый игрок')
-async def new_player(call: CallbackQuery, state: FSMContext):
+async def _new_player(call: CallbackQuery, state: FSMContext):
     """Добавление в таблицу player базы данных нового игрока
     Запрос логина"""
     await state.clear()
@@ -29,7 +29,7 @@ async def new_player(call: CallbackQuery, state: FSMContext):
 
 
 @player_router.message(Command('new_player'))
-async def new_player(message: Message, state: FSMContext):
+async def _new_player(message: Message, state: FSMContext):
     """Добавление в таблицу player базы данных нового игрока
     Запрос логина"""
     await state.clear()
@@ -40,7 +40,7 @@ async def new_player(message: Message, state: FSMContext):
 
 
 @player_router.message(Player.login)
-async def new_player_end(message: Message, state: FSMContext):
+async def _new_player_end(message: Message, state: FSMContext):
     """Добавление в таблицу player базы данных нового игрока
         Внесение логина в базу данных"""
     await state.clear()

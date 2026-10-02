@@ -12,7 +12,7 @@ statistics_router = Router()
 
 
 @statistics_router.callback_query(F.data == 'cтатистика игроков')
-async def player_statistics(call: CallbackQuery):
+async def _player_statistics(call: CallbackQuery):
     """Вывести статистику всех игроков по сыгранным играм"""
     async with ChatActionSender.typing(bot=bot, chat_id=call.message.chat.id):
         await asyncio.sleep(2)
@@ -22,7 +22,7 @@ async def player_statistics(call: CallbackQuery):
 
 
 @statistics_router.message(Command('static'))
-async def player_statistics(message: Message):
+async def _player_statistics(message: Message):
     """Вывести статистику всех игроков по сыгранным играм"""
     async with ChatActionSender.typing(bot=bot, chat_id=message.chat.id):
         await asyncio.sleep(2)

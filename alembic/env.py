@@ -30,7 +30,7 @@ target_metadata = Base.metadata
 # ... etc.
 
 
-def run_migrations_offline() -> None:
+def _run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
     This configures the context with just a URL
@@ -54,14 +54,14 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
-def do_run_migrations(connection: Connection) -> None:
+def _do_run_migrations(connection: Connection) -> None:
     context.configure(connection=connection, target_metadata=target_metadata)
 
     with context.begin_transaction():
         context.run_migrations()
 
 
-async def run_async_migrations() -> None:
+async def _run_async_migrations() -> None:
     """In this scenario we need to create an Engine
     and associate a connection with the context.
 
@@ -74,18 +74,18 @@ async def run_async_migrations() -> None:
     )
 
     async with connectable.connect() as connection:
-        await connection.run_sync(do_run_migrations)
+        await connection.run_sync(_do_run_migrations)
 
     await connectable.dispose()
 
 
-def run_migrations_online() -> None:
+def _run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
 
-    asyncio.run(run_async_migrations())
+    asyncio.run(_run_async_migrations())
 
 
 if context.is_offline_mode():
-    run_migrations_offline()
+    _run_migrations_offline()
 else:
-    run_migrations_online()
+    _run_migrations_online()

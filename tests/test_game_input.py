@@ -9,7 +9,7 @@ from tests.test_game_isolation import game_utils
 from utils.game_state import games, get_game
 
 
-def load_handlers():
+def _load_handlers():
     keyboards = ModuleType('keyboards')
     keyboards.make_count = AsyncMock()
     keyboards.purchase = AsyncMock()
@@ -23,7 +23,7 @@ def load_handlers():
     return module
 
 
-handlers = load_handlers()
+handlers = _load_handlers()
 
 
 class GameInputTests(unittest.IsolatedAsyncioTestCase):
@@ -40,11 +40,11 @@ class GameInputTests(unittest.IsolatedAsyncioTestCase):
         self.state = SimpleNamespace(clear=AsyncMock())
         game_utils.bot.send_photo.reset_mock()
         game_utils.update_game_db.reset_mock()
-        self.render = patch.object(game_utils, 'text_game', AsyncMock(return_value=('Игра', b'image')))
+        self.render = patch.object(game_utils, '_text_game', AsyncMock(return_value=('Игра', b'image')))
         self.render.start()
         self.addCleanup(self.render.stop)
 
-    def message(self, text):
+    def _message(self, text):
         return SimpleNamespace(
             text=text, chat=SimpleNamespace(id=10), from_user=SimpleNamespace(id=123),
             answer=AsyncMock(),
@@ -56,7 +56,7 @@ class GameInputTests(unittest.IsolatedAsyncioTestCase):
                 with self.subTest(started=started, text=text):
                     self.game.start_status = started
                     before = deepcopy(self.game)
-                    message = self.message(text)
+                    message = self._message(text)
                     await game_utils.result_chips(message, self.state)
                     self.assertEqual(self.game, before)
                     self.state.clear.assert_not_awaited()
@@ -66,9 +66,9 @@ class GameInputTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_valid_exit_after_mistake_uses_same_player_and_allows_zero(self):
         self.game.start_status = True
-        await game_utils.result_chips(self.message('ошибка'), self.state)
+        await game_utils.result_chips(self._message('ошибка'), self.state)
         self.state.clear.assert_not_awaited()
-        await game_utils.result_chips(self.message(' 0 '), self.state)
+        await game_utils.result_chips(self._message(' 0 '), self.state)
         result = self.game.game_data['Alice']
         self.assertEqual(result['Статус'], 'Вышел')
         self.assertEqual(result['Фишки'], 0)
@@ -79,7 +79,7 @@ class GameInputTests(unittest.IsolatedAsyncioTestCase):
     async def test_finishing_game_moves_to_next_player_without_clearing_fsm(self):
         self.game.start_status = False
         self.game.player_list = ['Bob']
-        message = self.message('1500')
+        message = self._message('1500')
         await game_utils.result_chips(message, self.state)
         self.assertEqual(self.game.game_data['Alice']['Руб.'], 1000)
         self.assertEqual(self.game.out_player, 'Bob')
@@ -90,7 +90,7 @@ class GameInputTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_finishing_last_player_saves_results_and_clears_fsm(self):
         self.game.start_status = False
-        await game_utils.result_chips(self.message('1250'), self.state)
+        await game_utils.result_chips(self._message('1250'), self.state)
         self.assertEqual(self.game.game_data['Alice']['Фишки'], 1250)
         self.assertEqual(self.game.game_data['Alice']['Руб.'], 500)
         game_utils.update_game_db.assert_awaited_once_with(self.game.game_data, 101)
@@ -100,23 +100,23 @@ class GameInputTests(unittest.IsolatedAsyncioTestCase):
         for text in ('abc', '12.5', '-1', '', None):
             with self.subTest(text=text):
                 before = deepcopy(self.game)
-                message = self.message(text)
-                await handlers.change_purchase(message, self.state)
+                message = self._message(text)
+                await handlers._change_purchase(message, self.state)
                 self.assertEqual(self.game, before)
                 self.state.clear.assert_not_awaited()
                 game_utils.bot.send_photo.assert_not_awaited()
                 message.answer.assert_awaited_once()
 
     async def test_valid_purchase_after_mistake_updates_amount_and_clears_fsm(self):
-        await handlers.change_purchase(self.message('ошибка'), self.state)
+        await handlers._change_purchase(self._message('ошибка'), self.state)
         self.state.clear.assert_not_awaited()
-        await handlers.change_purchase(self.message(' 1500 '), self.state)
+        await handlers._change_purchase(self._message(' 1500 '), self.state)
         self.assertEqual(self.game.game_data['Alice']['Закуп,фш.'], 1500)
         self.assertEqual(self.game.game_data['Alice']['Закуп,руб.'], 3000)
         self.state.clear.assert_awaited_once()
 
     async def test_zero_purchase_is_valid(self):
-        await handlers.change_purchase(self.message('0'), self.state)
+        await handlers._change_purchase(self._message('0'), self.state)
         self.assertEqual(self.game.game_data['Alice']['Закуп,фш.'], 0)
         self.assertEqual(self.game.game_data['Alice']['Закуп,руб.'], 0)
         self.state.clear.assert_awaited_once()

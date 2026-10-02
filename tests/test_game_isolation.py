@@ -17,7 +17,7 @@ from utils.game_state import games, get_game
 from utils.table_image import render_table
 
 
-def load_game_utils(source=None):
+def _load_game_utils(source=None):
     keyboards = ModuleType('keyboards')
     for name in (
         'input_player_game_kb', 'start_game_kb', 'game_keyboards',
@@ -45,10 +45,10 @@ def load_game_utils(source=None):
     return module
 
 
-game_utils = load_game_utils()
+game_utils = _load_game_utils()
 
 
-def callback(chat_id, data=''):
+def _callback(chat_id, data=''):
     return SimpleNamespace(
         data=data,
         message=SimpleNamespace(chat=SimpleNamespace(id=chat_id), answer=AsyncMock()),
@@ -68,8 +68,8 @@ class GameIsolationTests(unittest.IsolatedAsyncioTestCase):
             get_game(chat_id).count = count
 
     async def test_starting_games_keeps_players_and_coefficients_separate(self):
-        await game_utils.start_game(callback(10))
-        await game_utils.start_game(callback(20))
+        await game_utils.start_game(_callback(10))
+        await game_utils.start_game(_callback(20))
         self.assertEqual(get_game(10).game_data['Alice']['Закуп,руб.'], 2000)
         self.assertEqual(get_game(20).game_data['Bob']['Закуп,руб.'], 5000)
         self.assertNotIn('Bob', get_game(10).game_data)
@@ -94,21 +94,21 @@ class GameIsolationTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(get_game(20).count, 5)
 
     async def test_purchase_selection_does_not_leak_to_other_chat(self):
-        await game_utils.start_game(callback(10))
-        await game_utils.start_game(callback(20))
-        await game_utils.update_add_on_player(callback(10, 'закуп Alice'))
-        await game_utils.update_add_on_player(callback(20, 'закуп Bob'))
-        await game_utils.add_on_utils(callback(10, 'фишки 500'))
+        await game_utils.start_game(_callback(10))
+        await game_utils.start_game(_callback(20))
+        await game_utils.update_add_on_player(_callback(10, 'закуп Alice'))
+        await game_utils.update_add_on_player(_callback(20, 'закуп Bob'))
+        await game_utils.add_on_utils(_callback(10, 'фишки 500'))
         self.assertEqual(get_game(10).game_data['Alice']['Закуп,фш.'], 1500)
         self.assertEqual(get_game(20).game_data['Bob']['Закуп,фш.'], 1000)
 
     async def test_finishing_one_chat_updates_only_its_database_game(self):
-        await game_utils.start_game(callback(10))
-        await game_utils.start_game(callback(20))
+        await game_utils.start_game(_callback(10))
+        await game_utils.start_game(_callback(20))
         get_game(10).start_status = True
         get_game(10).game_id = 101
         get_game(20).start_status = True
-        await game_utils.game_end_start(callback(10))
+        await game_utils.game_end_start(_callback(10))
         message = SimpleNamespace(
             chat=SimpleNamespace(id=10), text='1200',
             from_user=SimpleNamespace(id=123), answer=AsyncMock(),
@@ -121,11 +121,11 @@ class GameIsolationTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(get_game(20).game_data['Bob']['Статус'], 'В игре')
 
     async def test_rendered_images_are_independent_png_uploads(self):
-        await game_utils.start_game(callback(10))
-        await game_utils.start_game(callback(20))
-        text_a, image_a = await game_utils.text_game(10)
+        await game_utils.start_game(_callback(10))
+        await game_utils.start_game(_callback(20))
+        text_a, image_a = await game_utils._text_game(10)
         saved_a = image_a.data
-        text_b, image_b = await game_utils.text_game(20)
+        text_b, image_b = await game_utils._text_game(20)
         self.assertIn('1 к 2', text_a)
         self.assertIn('1 к 5', text_b)
         self.assertTrue(saved_a.startswith(b'\x89PNG\r\n\x1a\n'))
@@ -134,12 +134,12 @@ class GameIsolationTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(image_a.data, saved_a)
 
     async def test_database_ids_and_start_flags_belong_to_each_chat(self):
-        await game_utils.start_game(callback(10))
-        await game_utils.start_game(callback(20))
+        await game_utils.start_game(_callback(10))
+        await game_utils.start_game(_callback(20))
         game_utils.create_game_db.side_effect = [('02.10.2026', 101), ('03.10.2026', 202)]
-        await game_utils.game_utils(callback(10))
+        await game_utils.game_utils(_callback(10))
         self.assertFalse(get_game(20).start_status)
-        await game_utils.game_utils(callback(20))
+        await game_utils.game_utils(_callback(20))
         self.assertEqual(get_game(10).game_id, 101)
         self.assertEqual(get_game(20).game_id, 202)
         self.assertEqual(get_game(10).date, '02.10.2026')

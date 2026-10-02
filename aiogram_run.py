@@ -9,7 +9,7 @@ from handlers.player import player_router
 from handlers.player_statistics import statistics_router
 
 
-async def set_commands():
+async def _set_commands():
     """Настройка меню бота"""
     commands = [BotCommand(command='start', description='Запустить бота'),
                 BotCommand(command='start_game', description='Начать новую игру'),
@@ -19,14 +19,14 @@ async def set_commands():
     await bot.set_my_commands(commands, BotCommandScopeDefault())
 
 
-async def on_startup():
+async def _on_startup():
     """Действия при запуске бота"""
-    await set_commands()
+    await _set_commands()
     await bot.delete_webhook(drop_pending_updates=True)
     print('Бот запущен')
 
 
-async def on_shutdown(_):
+async def _on_shutdown(_):
     """Действия при остановке бота"""
     print('Бот остановлен')
 
@@ -34,7 +34,7 @@ async def on_shutdown(_):
 async def main():
     """Запуск бота"""
     dp.include_routers(start_router, game_router, player_router, statistics_router)
-    dp.startup.register(on_startup)
+    dp.startup.register(_on_startup)
     try:
         await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
     finally:

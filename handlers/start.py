@@ -17,19 +17,19 @@ class Game(StatesGroup):
 
 
 @start_router.message(CommandStart())
-async def cmd_start(message: Message):
+async def _cmd_start(message: Message):
     """Вызов стартовой клавиатуры"""
     await message.answer('Салам браток 🤙',
                          reply_markup=await main_kb(message.from_user.id))
 
 
 @start_router.callback_query(F.data == 'админ панель')
-async def admin_board(call: CallbackQuery):
+async def _admin_board(call: CallbackQuery):
     await call.message.answer('Что делаем?', reply_markup=await admin_main_kb())
 
 
 @start_router.callback_query(F.data == "прошлая игра", )
-async def last_game_start(call: CallbackQuery, state: FSMContext):
+async def _last_game_start(call: CallbackQuery, state: FSMContext):
     await state.clear()
     keyboards, games = await get_last_games()
     await state.set_data({"games": games})
@@ -38,7 +38,7 @@ async def last_game_start(call: CallbackQuery, state: FSMContext):
 
 
 @start_router.message(Command('past_games'))
-async def last_game_start(message: Message, state: FSMContext):
+async def _last_game_start(message: Message, state: FSMContext):
     await state.clear()
     keyboards, games = await get_last_games()
     await state.set_data({"games": games})
@@ -47,7 +47,7 @@ async def last_game_start(message: Message, state: FSMContext):
 
 
 @start_router.callback_query(lambda call: call.data.startswith('результаты'))
-async def last_game_end(call: CallbackQuery, state: FSMContext):
+async def _last_game_end(call: CallbackQuery, state: FSMContext):
     games = await state.get_data()
     game = next((game for game in games["games"] if game["date"] == call.data[11:]))
     text, photo = await get_last_game(game)
