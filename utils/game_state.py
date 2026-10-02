@@ -1,8 +1,11 @@
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 
 
 @dataclass
 class GameState:
+    phase: str = 'coefficient'
+    pending_action: str = ''
+    pending_user_id: int = 0
     game_users: list[str] = field(default_factory=list)
     start_status: bool = False
     player_list: list[str] = field(default_factory=list)
@@ -28,3 +31,12 @@ def get_game(chat_id: int) -> GameState:
 def reset_game(chat_id: int) -> GameState:
     games[chat_id] = GameState()
     return games[chat_id]
+
+
+def restore_games(records: dict[int, dict]) -> None:
+    games.clear()
+    games.update({chat_id: GameState(**data) for chat_id, data in records.items()})
+
+
+def game_snapshot(chat_id: int) -> dict:
+    return asdict(get_game(chat_id))

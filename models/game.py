@@ -1,10 +1,16 @@
 from datetime import date
 from typing import List
-from sqlalchemy import text, JSON, String, Integer, Table, Column, ForeignKey, Date
+from sqlalchemy import text, JSON, String, Integer, BigInteger, Table, Column, ForeignKey, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
+
+
+class ActiveGame(Base):
+    __tablename__ = 'active_games'
+    chat_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    state: Mapped[dict] = mapped_column(JSON, nullable=False)
 
 
 game_player = Table(

@@ -60,5 +60,5 @@ class DatabaseConfigTests(unittest.TestCase):
             capture_output=True, text=True, timeout=30,
         )
         self.assertEqual(result.returncode, 0, result.stderr)
-        for table in ('games', 'players', 'game_player'):
+        for table in ('games', 'players', 'game_player', 'active_games'):
             self.assertIn(f'CREATE TABLE {table}', result.stdout)

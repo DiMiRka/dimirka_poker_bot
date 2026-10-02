@@ -7,4 +7,6 @@ __all__ = ["create_player_db",
            "update_game_db",
            "get_result_games_db",
            "update_player_db",
-           "get_games_db"]
+           "get_games_db", "save_active_game_db", "load_active_games_db", "finish_game_db"]
+
+from services.game import save_active_game_db, load_active_games_db, finish_game_db

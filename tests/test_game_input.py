@@ -16,8 +16,10 @@ def _load_handlers():
     path = Path(__file__).resolve().parents[1] / 'handlers' / 'game.py'
     spec = importlib.util.spec_from_file_location('isolated_game_handlers', path)
     module = importlib.util.module_from_spec(spec)
+    services = ModuleType('services')
+    services.load_active_games_db = AsyncMock(return_value={})
     with patch.dict('sys.modules', {
-        'keyboards': keyboards, 'utils.game_utils': game_utils,
+        'keyboards': keyboards, 'utils.game_utils': game_utils, 'services': services,
     }):
         spec.loader.exec_module(module)
     return module
@@ -39,7 +41,7 @@ class GameInputTests(unittest.IsolatedAsyncioTestCase):
         }
         self.state = SimpleNamespace(clear=AsyncMock())
         game_utils.bot.send_photo.reset_mock()
-        game_utils.update_game_db.reset_mock()
+        game_utils.finish_game_db.reset_mock()
         self.render = patch.object(game_utils, '_text_game', AsyncMock(return_value=('Игра', b'image')))
         self.render.start()
         self.addCleanup(self.render.stop)
@@ -60,7 +62,7 @@ class GameInputTests(unittest.IsolatedAsyncioTestCase):
                     await game_utils.result_chips(message, self.state)
                     self.assertEqual(self.game, before)
                     self.state.clear.assert_not_awaited()
-                    game_utils.update_game_db.assert_not_awaited()
+                    game_utils.finish_game_db.assert_not_awaited()
                     game_utils.bot.send_photo.assert_not_awaited()
                     message.answer.assert_awaited_once()
 
@@ -74,7 +76,7 @@ class GameInputTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result['Фишки'], 0)
         self.assertEqual(result['Руб.'], -2000)
         self.state.clear.assert_awaited_once()
-        game_utils.update_game_db.assert_not_awaited()
+        game_utils.finish_game_db.assert_not_awaited()
 
     async def test_finishing_game_moves_to_next_player_without_clearing_fsm(self):
         self.game.start_status = False
@@ -85,7 +87,7 @@ class GameInputTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.game.out_player, 'Bob')
         self.assertEqual(self.game.player_list, [])
         self.state.clear.assert_not_awaited()
-        game_utils.update_game_db.assert_not_awaited()
+        game_utils.finish_game_db.assert_not_awaited()
         message.answer.assert_awaited_once_with(text='Bob на кармане:')
 
     async def test_finishing_last_player_saves_results_and_clears_fsm(self):
@@ -93,7 +95,7 @@ class GameInputTests(unittest.IsolatedAsyncioTestCase):
         await game_utils.result_chips(self._message('1250'), self.state)
         self.assertEqual(self.game.game_data['Alice']['Фишки'], 1250)
         self.assertEqual(self.game.game_data['Alice']['Руб.'], 500)
-        game_utils.update_game_db.assert_awaited_once_with(self.game.game_data, 101)
+        game_utils.finish_game_db.assert_awaited_once_with(10, self.game.game_data, 101)
         self.state.clear.assert_awaited_once()
 
     async def test_invalid_purchase_input_keeps_data_and_fsm(self):

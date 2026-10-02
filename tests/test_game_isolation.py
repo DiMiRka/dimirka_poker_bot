@@ -20,7 +20,7 @@ from utils.table_image import render_table
 def _load_game_utils(source=None):
     keyboards = ModuleType('keyboards')
     for name in (
-        'input_player_game_kb', 'start_game_kb', 'game_keyboards',
+        'make_count', 'purchase', 'input_player_game_kb', 'start_game_kb', 'game_keyboards',
         'purchase_players_keyboards', 'exit_players_keyboards', 'main_kb',
         'game_admin_keyboards', 'change_purchase_players_keyboards',
         'back_players_keyboards', 'extra_players_keyboards',
@@ -32,6 +32,9 @@ def _load_game_utils(source=None):
     services.create_game_db = AsyncMock()
     services.get_players_db = AsyncMock()
     services.update_game_db = AsyncMock()
+    services.save_active_game_db = AsyncMock()
+    services.load_active_games_db = AsyncMock(return_value={})
+    services.finish_game_db = AsyncMock()
     path = Path(__file__).resolve().parents[1] / 'utils' / 'game_utils.py'
     spec = importlib.util.spec_from_file_location('isolated_game_utils', path)
     module = importlib.util.module_from_spec(spec)
@@ -61,7 +64,8 @@ class GameIsolationTests(unittest.IsolatedAsyncioTestCase):
         games.clear()
         game_utils.bot.send_photo.reset_mock()
         game_utils.create_game_db.reset_mock()
-        game_utils.update_game_db.reset_mock()
+        game_utils.finish_game_db.reset_mock()
+        game_utils.save_active_game_db.reset_mock()
         for chat_id, player, count in ((10, 'Alice', 2), (20, 'Bob', 5)):
             game_utils.player_input(chat_id, 'новая игра')
             game_utils.player_input(chat_id, player)
@@ -114,7 +118,7 @@ class GameIsolationTests(unittest.IsolatedAsyncioTestCase):
             from_user=SimpleNamespace(id=123), answer=AsyncMock(),
         )
         await game_utils.result_chips(message, SimpleNamespace(clear=AsyncMock()))
-        game_utils.update_game_db.assert_awaited_once_with(get_game(10).game_data, 101)
+        game_utils.finish_game_db.assert_awaited_once_with(10, get_game(10).game_data, 101)
         self.assertEqual(get_game(10).game_data['Alice']['Руб.'], 400)
         self.assertTrue(get_game(20).start_status)
         self.assertEqual(get_game(20).player_list, ['Bob'])

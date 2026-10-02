@@ -3,6 +3,8 @@ import asyncio
 from aiogram.types import BotCommand, BotCommandScopeDefault
 
 from create_bot import bot, dp
+from services import load_active_games_db
+from utils.game_state import restore_games
 from handlers.start import start_router
 from handlers.game import game_router
 from handlers.player import player_router
@@ -13,6 +15,7 @@ async def _set_commands():
     """Настройка меню бота"""
     commands = [BotCommand(command='start', description='Запустить бота'),
                 BotCommand(command='start_game', description='Начать новую игру'),
+                BotCommand(command='resume_game', description='Продолжить незавершённую игру'),
                 BotCommand(command='new_player', description='Добавить игрока'),
                 BotCommand(command='statics', description='Статистика игроков'),
                 BotCommand(command='past_games', description='Прошлые игры')]
@@ -21,8 +24,9 @@ async def _set_commands():
 
 async def _on_startup():
     """Действия при запуске бота"""
+    restore_games(await load_active_games_db())
     await _set_commands()
-    await bot.delete_webhook(drop_pending_updates=True)
+    await bot.delete_webhook(drop_pending_updates=False)
     print('Бот запущен')
 
 

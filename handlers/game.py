@@ -1,42 +1,40 @@
 from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
-from aiogram.fsm.state import State, StatesGroup
+from utils.game_fsm import ChangePurchase, ResultGame
+from utils.game_middleware import GamePersistenceMiddleware
 from aiogram.fsm.context import FSMContext
 
 import logging
 
 
-from keyboards import make_count, purchase
-from utils.game_utils import (player_input, input_players_start, input_players, update_users, update_count,
+from keyboards import purchase
+from utils.game_utils import (input_players_start, input_players, update_count,
                               start_game, game_utils, input_players_game, add_on_players, update_add_on_player,
                               add_on_utils, player_out_game, start_out_player, result_chips, game_end_start,
                               admin_board_game, update_change_on_player, change_purchase_players, change_purchase_utils,
-                              game_back_player, game_back_player_end, out_extra_player, delete_extra_player)
+                              game_back_player, game_back_player_end, out_extra_player, delete_extra_player, begin_game, resume_game)
 
 game_router = Router()
 
 
-class ChangePurchase(StatesGroup):
-    change = State()
+game_router.message.outer_middleware(GamePersistenceMiddleware())
+game_router.callback_query.middleware(GamePersistenceMiddleware())
 
 
-class ResultGame(StatesGroup):
-    result_bank = State()
+@game_router.message(Command('resume_game'))
+async def _resume_game(message: Message, state: FSMContext):
+    await resume_game(message, state)
 
 
 @game_router.callback_query(F.data == 'начать игру')
-async def _start(call: CallbackQuery):
-    player_input(call.message.chat.id, 'новая игра')
-    await update_users(call.message.chat.id)
-    await call.message.answer('1 фишка равняется:', reply_markup=await make_count())
+async def _start(call: CallbackQuery, state: FSMContext):
+    await begin_game(call.message, state)
 
 
 @game_router.message(Command('start_game'))
-async def _start(message: Message):
-    player_input(message.chat.id, 'новая игра')
-    await update_users(message.chat.id)
-    await message.answer('1 фишка равняется:', reply_markup=await make_count())
+async def _start(message: Message, state: FSMContext):
+    await begin_game(message, state)
 
 
 @game_router.callback_query(lambda call: call.data.startswith('фишка') or call.data.startswith('игрок в старт'))
@@ -113,8 +111,8 @@ async def _total_chips(message: Message, state: FSMContext):
 
 @game_router.callback_query(lambda call: call.data == 'закончить')
 async def _end_game(call: CallbackQuery, state: FSMContext):
-    await game_end_start(call)
-    await state.set_state(ResultGame.result_bank)
+    if await game_end_start(call):
+        await state.set_state(ResultGame.result_bank)
     logging.info(f'{call.data}')
 
 
