@@ -27,7 +27,33 @@ Dimir Poker Bot <br>
 - Pandas (анализ статистики)
 - Matplotlib (визуализация данных)
 ---
-## ⚙️ Установка и настройка
+## 🐳 Запуск через Docker Compose
+
+Нужен Docker с поддержкой команды `docker compose`.
+Скопируйте `.env.example` в `.env`, заполните `TOKEN`, `ADMINS`, `ROOT_PASS`
+и задайте пароль PostgreSQL в `POSTGRES_PASSWORD`.
+`POSTGRES_USER` и `POSTGRES_DB` определяют пользователя и имя контейнерной БД.
+
+```bash
+docker compose up --build -d
+```
+
+Бот ждёт готовности PostgreSQL, применяет миграции Alembic и запускает polling.
+Compose задаёт `PG_HOST=db`; адрес подключения собирается из `POSTGRES_*`.
+`PG_LINK` используется при запуске без Docker.
+
+Логи и остановка:
+
+```bash
+docker compose logs -f bot
+docker compose down
+```
+
+База хранится в volume `postgres_data` и сохраняется после `docker compose down`.
+PostgreSQL доступен только внутри сети Compose. Перезапуск бота сбрасывает текущие игры в памяти;
+результаты завершённых игр сохраняются в БД.
+
+## ⚙️ Установка и настройка без Docker
 1. Клонируйте репозиторий:
    ```bash
     git clone https://github.com/DiMiRka/dimirka_poker_bot.git
@@ -53,6 +79,7 @@ Dimir Poker Bot <br>
    ```
 5. Запуск проекта:
     ```bash
+    python -m alembic upgrade head
     python aiogram_run.py
    ```
 ---
@@ -66,6 +93,7 @@ python -m unittest discover -s tests -t . -v
 ```
 
 GitHub Actions запускает тесты на Python 3.10 и 3.11 при push и pull request.
+После тестов CI проверяет конфигурацию Compose и собирает Docker-образ.
 
 ---
 ### 🗂 Структура проекта

@@ -1,11 +1,11 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from decouple import config
+from db.config import get_database_url
 from contextlib import asynccontextmanager
 
 
 class Database:
     def __init__(self):
-        self.engine = create_async_engine(config('PG_LINK'), echo=True)
+        self.engine = create_async_engine(get_database_url(), echo=True)
         self.session_factory = async_sessionmaker(
             bind=self.engine,
             expire_on_commit=False,

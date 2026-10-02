@@ -8,6 +8,7 @@ from aiogram import BaseMiddleware
 from aiogram.types import Message
 
 from decouple import config
+from db.config import get_database_url
 from asyncpg_lite import DatabaseManager
 from typing import Callable, Dict, Awaitable, Any
 
@@ -34,4 +35,4 @@ logger = logging.getLogger(__name__)
 bot = Bot(token=config('TOKEN'), default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher(storage=MemoryStorage())
 dp.message.outer_middleware(MessageLogMiddleware())
-db_manager = DatabaseManager(db_url=config('PG_LINK'), deletion_password=config('ROOT_PASS'))
+db_manager = DatabaseManager(db_url=get_database_url(), deletion_password=config('ROOT_PASS'))
