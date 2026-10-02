@@ -27,22 +27,22 @@ class ResultGame(StatesGroup):
 
 @game_router.callback_query(F.data == 'начать игру')
 async def start(call: CallbackQuery):
-    player_input('новая игра')
-    await update_users()
+    player_input(call.message.chat.id, 'новая игра')
+    await update_users(call.message.chat.id)
     await call.message.answer('1 фишка равняется:', reply_markup=await make_count())
 
 
 @game_router.message(Command('start_game'))
 async def start(message: Message):
-    player_input('новая игра')
-    await update_users()
+    player_input(message.chat.id, 'новая игра')
+    await update_users(message.chat.id)
     await message.answer('1 фишка равняется:', reply_markup=await make_count())
 
 
 @game_router.callback_query(lambda call: call.data.startswith('фишка') or call.data.startswith('игрок в старт'))
 async def players_in_start(call: CallbackQuery):
     if call.data.startswith('фишка'):
-        await update_count(int(call.data[-1]))
+        await update_count(call.message.chat.id, int(call.data[-1]))
         await input_players_start(call)
         logging.info(f'{call.data}')
     else:
