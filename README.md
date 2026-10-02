@@ -27,20 +27,20 @@ Dimir Poker Bot <br>
 - Pandas (анализ статистики)
 - Matplotlib (визуализация данных)
 ---
-## 🐳 Запуск через Docker Compose
+## Запуск через Docker Compose
 
-Нужен Docker с поддержкой команды `docker compose`.
+Нужен Docker с поддержкой команды `docker compose`
 Скопируйте `.env.example` в `.env`, заполните `TOKEN`, `ADMINS`, `ROOT_PASS`
-и задайте пароль PostgreSQL в `POSTGRES_PASSWORD`.
-`POSTGRES_USER` и `POSTGRES_DB` определяют пользователя и имя контейнерной БД.
+и задайте пароль PostgreSQL в `POSTGRES_PASSWORD`
+`POSTGRES_USER` и `POSTGRES_DB` определяют пользователя и имя контейнерной БД
 
 ```bash
 docker compose up --build -d
 ```
 
-Бот ждёт готовности PostgreSQL, применяет миграции Alembic и запускает polling.
-Compose задаёт `PG_HOST=db`; адрес подключения собирается из `POSTGRES_*`.
-`PG_LINK` используется при запуске без Docker.
+Бот ждёт готовности PostgreSQL, применяет миграции Alembic и запускает polling
+Compose задаёт `PG_HOST=db`; адрес подключения собирается из `POSTGRES_*`
+`PG_LINK` используется при запуске без Docker
 
 Логи и остановка:
 
@@ -49,11 +49,11 @@ docker compose logs -f bot
 docker compose down
 ```
 
-База хранится в volume `postgres_data` и сохраняется после `docker compose down`.
+База хранится в volume `postgres_data` и сохраняется после `docker compose down`
 PostgreSQL доступен только внутри сети Compose. Перезапуск бота сбрасывает текущие игры в памяти;
-результаты завершённых игр сохраняются в БД.
+результаты завершённых игр сохраняются в БД
 
-## ⚙️ Установка и настройка без Docker
+## Установка и настройка без Docker
 1. Клонируйте репозиторий:
    ```bash
     git clone https://github.com/DiMiRka/dimirka_poker_bot.git
@@ -83,7 +83,7 @@ PostgreSQL доступен только внутри сети Compose. Пере
     python aiogram_run.py
    ```
 ---
-## 🧪 Тестирование
+## Тестирование
 
 Тесты проверяют расчёт статистики, изоляцию игр по чатам, ввод фишек и отрисовку таблиц
 Telegram и PostgreSQL заменены моками: для запуска тестов `.env` и внешние сервисы не нужны
@@ -92,8 +92,8 @@ Telegram и PostgreSQL заменены моками: для запуска те
 python -m unittest discover -s tests -t . -v
 ```
 
-GitHub Actions запускает тесты на Python 3.10 и 3.11 при push и pull request.
-После тестов CI проверяет конфигурацию Compose и собирает Docker-образ.
+GitHub Actions запускает тесты на Python 3.10 и 3.11 при push и pull request
+После тестов CI проверяет конфигурацию Compose и собирает Docker образ
 
 ---
 ### 🗂 Структура проекта
